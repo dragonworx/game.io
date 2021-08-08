@@ -1,7 +1,7 @@
-const chalk = require("chalk");
+const chalk = require('chalk');
 
 const stringify = (message: any) =>
-  typeof message === "string" ? message : JSON.stringify(message);
+  typeof message === 'string' ? message : JSON.stringify(message);
 
 export function fatalExit(message: any, errorCode = -1) {
   console.log(chalk.redBright(stringify(message)));
@@ -17,7 +17,7 @@ export function log(message: any) {
 }
 
 export function sys(message: any) {
-  console.log(chalk.magenta(stringify(message)));
+  console.log(chalk.cyan(stringify(message)));
 }
 
 export function warn(message: any) {

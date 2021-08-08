@@ -1,4 +1,4 @@
-import { IO } from "./io";
-import "./style.css";
+import './style.css';
+import { App } from './lib/app';
 
-new IO();
+new App();

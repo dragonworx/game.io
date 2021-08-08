@@ -1,3 +1,7 @@
-import { IO } from "./io";
+import { App } from './app';
+import { sys } from './util';
 
-new IO();
+console.clear();
+sys('Server app starting...');
+
+new App();

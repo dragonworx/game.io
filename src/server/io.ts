@@ -2,28 +2,39 @@ import geckos, {
   iceServers,
   ServerChannel,
   GeckosServer,
-} from "@geckos.io/server";
-import { info } from "./util";
+} from '@geckos.io/server';
+import EventEmitter from 'eventemitter3';
 
-export class IO {
-  gecko: GeckosServer;
-  socket: any;
+export enum Events {
+  UPDConnect = 'updConnect',
+  TCPConnect = 'tcpConnect',
+}
+
+export const TCPListenPort = 3000;
+
+export class IO extends EventEmitter {
+  upd: GeckosServer;
+  tcp: any;
 
   constructor() {
-    const gecko = (this.gecko = geckos({ iceServers }));
-    gecko.onConnection(this.onGeckoConnect);
-    gecko.listen();
+    super();
+    const upd = (this.upd = geckos({ iceServers }));
+    upd.onConnection(this.onUPDConnect);
 
-    const socket = (this.socket = require("socket.io")());
-    socket.on("connection", this.onSocketConnect);
-    socket.listen(3000);
+    const tcp = (this.tcp = require('socket.io')());
+    tcp.on('connection', this.onTCPConnect);
   }
 
-  onGeckoConnect = (channel: ServerChannel) => {
-    info("gecko connect!");
+  listen() {
+    this.upd.listen();
+    this.tcp.listen(TCPListenPort);
+  }
+
+  onUPDConnect = (channel: ServerChannel) => {
+    this.emit(Events.UPDConnect);
   };
 
-  onSocketConnect = (socket: any) => {
-    info("socket connect!");
+  onTCPConnect = (socket: any) => {
+    this.emit(Events.TCPConnect);
   };
 }
