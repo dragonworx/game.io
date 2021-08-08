@@ -4,15 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run serve:dev",
+    "start": "npm run dev:serve",
     "dev": "npm-run-all --parallel dev:*",
-    "dev:client": "webpack serve --config webpack.client.js",
-    "dev:server": "webpack --config webpack.server.js --watch",
+    "dev:build:client": "webpack serve --config webpack.client.js",
+    "dev:build:server": "webpack --config webpack.server.js --watch",
+    "dev:serve": "nodemon ./dist/server/bundle.js --watch",
     "build": "npm run build:client && npm run build:server",
-    "build:client": "webpack --config webpack.client.js",
-    "build:server": "webpack --config webpack.server.js",
-    "serve:dev": "nodemon ./dist/server/bundle.js --watch",
-    "serve:prod": "NODE_ENV=production node index.js"
+    "build:client": "webpack --config --mode=production webpack.client.js",
+    "build:server": "webpack --config --mode=production webpack.server.js",
+    "serve": "NODE_ENV=production node index.js"
   },
   "keywords": [],
   "author": "Yannick Deubel",
