@@ -2,8 +2,8 @@ const nodeExternals = require('webpack-node-externals');
 const path = require('path');
 const chalk = require('chalk');
 
-module.exports = function (env/*, argv*/) {
-  const environment = env && env.production ? "production" : "development";
+module.exports = function (_env, argv) {
+  const environment = argv && argv.mode === 'production' ? "production" : "development";
   console.log(chalk.cyanBright.bold(`Building [${environment.toUpperCase()}] Server...`));
   return {
     mode: environment,
