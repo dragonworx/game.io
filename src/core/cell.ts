@@ -1,5 +1,5 @@
-import { Edge } from "./edge";
-import { Rect } from "./util";
+import { Edge } from './edge';
+import { Rect } from './util';
 
 export class Cell {
   top: Edge;
@@ -32,7 +32,7 @@ export class Cell {
     return this.bottom.to;
   }
 
-  get bounds(): Rect {
+  get rect(): Rect {
     const { topLeft, bottomRight, topRight } = this;
     return [
       topLeft.x,

@@ -4,6 +4,14 @@ import { Cell } from './cell';
 import { CutLine } from './cutLine';
 import { edgeKey, vertexKey } from './util';
 
+export type CellIterator = (
+  cell: Cell,
+  h: number,
+  v: number,
+  x: number,
+  y: number,
+) => void;
+
 export class Grid {
   hDivisions: number;
   vDivisions: number;
@@ -31,11 +39,6 @@ export class Grid {
 
   get minCellSize() {
     return Math.min(this.cellWidth, this.cellHeight);
-  }
-
-  reset() {
-    this.cells = [];
-    this.init();
   }
 
   init() {
@@ -236,5 +239,21 @@ export class Grid {
     });
     cutLine.uncutEdges();
     return emptyCells;
+  }
+
+  reset() {
+    this.cells = [];
+    this.init();
+  }
+
+  forEach(fn: CellIterator) {
+    for (let v = 0; v < this.vDivisions; v += 1) {
+      const y = v * this.cellHeight;
+      for (let h = 0; h < this.hDivisions; h += 1) {
+        const x = h * this.cellWidth;
+        const cell = this.cells[v][h];
+        fn(cell, h, v, x, y);
+      }
+    }
   }
 }
