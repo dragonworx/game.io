@@ -12,6 +12,7 @@ module.exports = function (_env, argv) {
     entry: './src/client/index.ts',
     devtool: "eval-source-map",
     devServer: {
+      host: 'localhost',
       contentBase: path.join(__dirname, './assets'),
       compress: true,
       port: 80,
