@@ -1,19 +1,29 @@
 export interface Message<T> {
+  clientId: string;
   type: string;
-  payload: T;
+  payload?: T;
+}
+
+export enum Protocol {
+  UPDConnect = '_updConnect',
+  SocketConnect = '_socketConnect',
+  UPDRegister = '_updRegister',
+  SocketRegister = '_socketRegister',
+  UPDMessage = '_updMessage',
+  SocketMessage = '_socketMessage',
+  Connected = '_connected',
+  Disconnected = '_disconnected',
+  UPDConnectError = '_updConnectError',
+  UPDDisconnect = '_updDisconnect',
+  SocketDisconnect = '_socketDisconnect',
+  ClientConnected = '_clientConnected',
 }
 
 export enum Events {
-  UPDConnect = 'updConnect',
-  SocketConnect = 'socketConnect',
-  UPDRegister = 'updRegister',
-  SocketRegister = 'socketRegister',
-  UPDMessage = 'updMessage',
-  SocketMessage = 'socketMessage',
-  Connected = 'connected',
-  Disconnected = 'disconnected',
-  UPDConnectError = 'updConnectError',
-  UPDDisconnect = 'updDisconnect',
-  SocketDisconnect = 'socketDisconnect',
-  ClientConnected = 'clientConnected',
+  UPDInit = 'updInit',
+  SocketInit = 'socketInit',
+  UPDPing = 'updPing',
+  UPDPong = 'updPong',
+  SocketPing = 'socketPing',
+  SocketPong = 'socketPong',
 }

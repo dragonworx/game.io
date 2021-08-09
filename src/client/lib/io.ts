@@ -2,10 +2,10 @@ import geckos, { ClientChannel, Data } from '@geckos.io/client';
 import { EventEmitter } from 'eventemitter3';
 import io, { Socket } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
-import { Message, Events } from '../../core/message';
+import { Message, Protocol } from '../../core/message';
 
 export class IO extends EventEmitter {
-  id: string;
+  clientId: string;
   udp: ClientChannel;
   socket: typeof Socket;
   isUPDConnected: boolean = false;
@@ -13,11 +13,11 @@ export class IO extends EventEmitter {
 
   constructor() {
     super();
-    this.id = uuidv4();
+    this.clientId = uuidv4();
     const channel = (this.udp = geckos());
     channel.onConnect(this.onUDPConnect);
     channel.onDisconnect(this.onUDPDisconnect);
-    channel.on('message', this.onUPDMessage);
+    channel.on(Protocol.UPDMessage, this.onUPDMessage);
 
     const socket = (this.socket = io(
       window.location.protocol + '//' + window.location.hostname + ':3000/',
@@ -25,60 +25,80 @@ export class IO extends EventEmitter {
 
     socket.on('connect', this.onSocketConnect);
     socket.on('disconnect', this.onSocketDisconnect);
-    socket.on('message', this.onSocketMessage);
+    socket.on(Protocol.SocketMessage, this.onSocketMessage);
   }
+
+  // udp
 
   onUDPConnect = (error?: Error) => {
     if (error) {
-      return this.emit(Events.UPDConnectError);
+      return this.emit(Protocol.UPDConnectError);
     }
     this.isUPDConnected = true;
-    this.udp.emit(Events.UPDRegister, this.id);
-    this.emit(Events.UPDConnect);
+    this.udp.emit(Protocol.UPDRegister, this.clientId);
+    this.emit(Protocol.UPDConnect);
     this.validateConnection();
   };
 
   onUDPDisconnect = () => {
     this.isUPDConnected = false;
-    this.emit(Events.UPDDisconnect);
+    this.emit(Protocol.UPDDisconnect);
     this.validateConnection();
   };
 
-  onUPDMessage = (message: Data) => {
-    this.emit(Events.UPDMessage, message as Message<any>);
+  onUPDMessage = (data: Data) => {
+    const message = data as Message<any>;
+    this.emit(Protocol.UPDMessage, message);
+    this.emit(message.type, message.payload);
   };
+
+  messageUPD<T>(type: string, payload?: T) {
+    console.log('send upd message', type, payload);
+    this.udp.emit(Protocol.UPDMessage, {
+      clientId: this.clientId,
+      type,
+      payload,
+    });
+  }
+
+  // socket
 
   onSocketConnect = () => {
     this.isSocketConnected = true;
-    this.socket.emit(Events.SocketRegister, this.id);
-    this.emit(Events.SocketConnect);
+    this.socket.emit(Protocol.SocketRegister, this.clientId);
+    this.emit(Protocol.SocketConnect);
     this.validateConnection();
   };
 
   onSocketDisconnect = () => {
     this.isSocketConnected = false;
-    this.emit(Events.SocketDisconnect);
+    this.emit(Protocol.SocketDisconnect);
     this.validateConnection();
   };
 
-  onSocketMessage = (message: Data) => {
-    this.emit(Events.SocketMessage, message as Message<any>);
+  onSocketMessage = (data: Data) => {
+    const message = data as Message<any>;
+    this.emit(Protocol.SocketMessage, message);
+    this.emit(message.type, message.payload);
   };
 
-  sendUPDMessage(message: Message<any>) {
-    this.udp.emit('message', message);
+  messageSocket<T>(type: string, payload?: T) {
+    console.log('send socket message', type, payload);
+    this.socket.emit(Protocol.SocketMessage, {
+      clientId: this.clientId,
+      type,
+      payload,
+    });
   }
 
-  sendSocketMessage(message: Message<any>) {
-    this.socket.emit('message', message);
-  }
+  // general
 
   validateConnection() {
     const { isSocketConnected, isUPDConnected: isUDPConnected } = this;
     if (isSocketConnected && isUDPConnected) {
-      this.emit(Events.Connected);
+      this.emit(Protocol.Connected);
     } else if (!isSocketConnected && !isUDPConnected) {
-      this.emit(Events.Disconnected);
+      this.emit(Protocol.Disconnected);
     }
   }
 }

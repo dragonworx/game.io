@@ -1,7 +1,8 @@
-import { Client, IO } from './io';
+import { IO } from './io';
+import { Client } from './client';
 import { info } from './util';
 import { Player } from '../core/player';
-import { Events } from '../core/message';
+import { Protocol, Events } from '../core/message';
 
 export class App {
   io: IO;
@@ -9,9 +10,11 @@ export class App {
 
   constructor() {
     const io = (this.io = new IO());
-    io.on(Events.UPDConnect, this.onUPDConnect);
-    io.on(Events.SocketConnect, this.onSocketConnect);
-    io.on(Events.ClientConnected, this.onClientConnected);
+    io.on(Protocol.UPDConnect, this.onUPDConnect);
+    io.on(Protocol.SocketConnect, this.onSocketConnect);
+    io.on(Protocol.ClientConnected, this.onClientConnected);
+    io.on(Events.UPDPing, this.onUPDPing);
+    io.on(Events.SocketPing, this.onSocketPing);
     io.listen();
   }
 
@@ -25,11 +28,15 @@ export class App {
 
   onClientConnected = (client: Client) => {
     info('Client connected ' + client.id);
+    client.messageUPD(Events.UPDInit);
+    client.messageSocket(Events.SocketInit);
   };
 
-  newPlayer() {
-    const player = new Player();
-    this.players.push(player);
-    this.io.emit;
-  }
+  onUPDPing = (client: Client) => {
+    console.log('on udp ping ' + client.id);
+  };
+
+  onSocketPing = (client: Client) => {
+    console.log('on socket ping ' + client.id);
+  };
 }

@@ -5,7 +5,8 @@ import geckos, {
   Data,
 } from '@geckos.io/server';
 import EventEmitter from 'eventemitter3';
-import { Message, Events } from '../core/message';
+import { Message, Protocol } from '../core/message';
+import { Client } from './client';
 import { info } from './util';
 
 export { ServerChannel } from '@geckos.io/server';
@@ -45,31 +46,41 @@ export class IO extends EventEmitter {
 
   onUPDConnect = (channel: ServerChannel) => {
     const { id } = channel;
-    channel.on(Events.UPDRegister, (clientId: Data) => {
+    channel.on(Protocol.UPDRegister, (clientId: Data) => {
       info(`upd register ${clientId}@${id}`);
-      this.registerClient(String(clientId), id);
+      this.registerClient(String(clientId), channel);
     });
-    channel.on('message', (message: Data) =>
-      this.emit(Events.UPDMessage, message),
-    );
-    channel.onDisconnect = () => this.emit(Events.UPDDisconnect, id);
-    this.emit(Events.UPDConnect, id);
+    channel.on(Protocol.UPDMessage, (data: Data) => {
+      const message = data as Message<any>;
+      const { clientId, type, payload } = message;
+      info(`upd message ${clientId} "${type}" {${JSON.stringify(payload)}}`);
+      this.emit(Protocol.UPDMessage, message);
+      const client = this.clients.get(clientId)!;
+      this.emit(message.type, client, message.payload);
+    });
+    channel.onDisconnect = () => this.emit(Protocol.UPDDisconnect, id);
+    this.emit(Protocol.UPDConnect, id);
   };
 
   onSocketConnect = (socket: Socket) => {
     const { id } = socket;
-    socket.on(Events.SocketRegister, (clientId: string) => {
+    socket.on(Protocol.SocketRegister, (clientId: string) => {
       info(`socket register ${clientId}@${id}`);
-      this.registerClient(clientId, undefined, id);
+      this.registerClient(clientId, undefined, socket);
     });
-    socket.on('disconnect', () => this.emit(Events.SocketDisconnect, id));
-    socket.on(Events.SocketMessage, (message: Message<any>) =>
-      this.emit(Events.SocketMessage, message),
-    );
-    this.emit(Events.SocketConnect, id);
+    socket.on('disconnect', () => this.emit(Protocol.SocketDisconnect, id));
+    socket.on(Protocol.SocketMessage, (data: Message<any>) => {
+      const message = data as Message<any>;
+      const { clientId, type, payload } = message;
+      info(`socket message ${clientId} "${type}" {${JSON.stringify(payload)}}`);
+      this.emit(Protocol.SocketMessage, message);
+      const client = this.clients.get(clientId)!;
+      this.emit(message.type, client, message.payload);
+    });
+    this.emit(Protocol.SocketConnect, id);
   };
 
-  registerClient(clientId: string, updId?: string, socketId?: string) {
+  registerClient(clientId: string, upd?: ServerChannel, socket?: Socket) {
     const { clients } = this;
     if (!clients.has(clientId)) {
       info('New client created ' + clientId);
@@ -77,20 +88,10 @@ export class IO extends EventEmitter {
       clients.set(clientId, client);
     }
     const client = clients.get(clientId)!;
-    updId && (client.updId = updId);
-    socketId && (client.socketId = socketId);
-    if (client.updId && client.socketId) {
-      this.emit(Events.ClientConnected, client);
+    upd && (client.upd = upd);
+    socket && (client.socket = socket);
+    if (client.upd && client.socket) {
+      this.emit(Protocol.ClientConnected, client);
     }
-  }
-}
-
-export class Client {
-  id: string;
-  updId?: string;
-  socketId?: string;
-
-  constructor(id: string) {
-    this.id = id;
   }
 }
