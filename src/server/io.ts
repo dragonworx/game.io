@@ -68,7 +68,15 @@ export class IO extends EventEmitter {
       info(`socket register ${clientId}@${id}`);
       this.registerClient(clientId, undefined, socket);
     });
-    socket.on('disconnect', () => this.emit(Protocol.SocketDisconnect, id));
+    socket.on('disconnect', () => {
+      this.clients.forEach(client => {
+        if (client.socket!.id === id) {
+          info('Removed client ' + client.id);
+          this.clients.delete(client.id);
+        }
+      });
+      this.emit(Protocol.SocketDisconnect, id);
+    });
     socket.on(Protocol.SocketMessage, (data: Message<any>) => {
       const message = data as Message<any>;
       const { clientId, type, payload } = message;

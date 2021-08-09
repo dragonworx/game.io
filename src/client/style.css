@@ -18,3 +18,9 @@ body {
 #canvas {
   border: 1px solid #ccc;
 }
+
+#latency {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}

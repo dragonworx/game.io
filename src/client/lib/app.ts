@@ -7,6 +7,7 @@ import { Protocol, Message, Events } from '../../core/message';
 export const GridDivisions = 10;
 export const GridSize = 500;
 export const GridMargin = 20;
+export const PingIntervalMs = 5000;
 
 export class App {
   io: IO;
@@ -42,38 +43,54 @@ export class App {
   }
 
   onConnected = () => {
-    console.log('Connected ' + this.io.clientId);
+    console.log('onConnected:', this.io.clientId);
   };
 
   onUPDMessage = <T>(message: Message<T>) => {
     const { type, payload } = message;
-    console.log(`upd message "${type}" {${JSON.stringify(payload)}}`);
+    console.log('onUPDMessage:', type, payload);
   };
 
   onSocketMessage = <T>(message: Message<T>) => {
     const { type, payload } = message;
-    console.log(`socket message "${type}" {${JSON.stringify(payload)}}`);
+    console.log('onSocketMessage:', type, payload);
   };
 
   onUPDInit = () => {
-    console.log('upd init');
-    this.updPing = startPing();
-    this.io.messageUPD(Events.UPDPing);
+    console.log('onUPDInit:');
+    this.startUPDPing();
   };
 
+  startUPDPing() {
+    this.updPing = startPing();
+    this.io.messageUPD(Events.UPDPing);
+  }
+
   onSocketInit = () => {
-    console.log('socket init');
+    console.log('onSocketInit:');
+    this.startSocketPing();
+  };
+
+  startSocketPing() {
     this.socketPing = startPing();
     this.io.messageSocket(Events.SocketPing);
-  };
+  }
 
   onUPDPong = () => {
     endPing(this.updPing!);
-    console.log('upd pong', this.updPing!.elapsed);
+    console.log('onUPDPong:', this.updPing!.elapsed);
+    document.getElementById('latency')!.innerText = `upd: ${
+      this.updPing!.elapsed
+    } socket: ${this.socketPing!.elapsed}`;
+    setTimeout(() => this.startUPDPing(), PingIntervalMs);
   };
 
   onSocketPong = () => {
     endPing(this.socketPing!);
-    console.log('socket pong', this.socketPing!.elapsed);
+    console.log('onSocketPong:', this.socketPing!.elapsed);
+    document.getElementById('latency')!.innerText = `upd: ${
+      this.updPing!.elapsed
+    } socket: ${this.socketPing!.elapsed}`;
+    setTimeout(() => this.startSocketPing(), PingIntervalMs);
   };
 }

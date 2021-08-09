@@ -53,7 +53,7 @@ export class IO extends EventEmitter {
   };
 
   messageUPD<T>(type: string, payload?: T) {
-    console.log('send upd message', type, payload);
+    console.debug('messageUPD:', type, payload);
     this.udp.emit(Protocol.UPDMessage, {
       clientId: this.clientId,
       type,
@@ -83,7 +83,7 @@ export class IO extends EventEmitter {
   };
 
   messageSocket<T>(type: string, payload?: T) {
-    console.log('send socket message', type, payload);
+    console.debug('messageSocket:', type, payload);
     this.socket.emit(Protocol.SocketMessage, {
       clientId: this.clientId,
       type,

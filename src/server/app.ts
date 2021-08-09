@@ -12,7 +12,9 @@ export class App {
     const io = (this.io = new IO());
 
     io.on(Protocol.UPDConnect, this.onUPDConnect);
+    io.on(Protocol.UPDDisconnect, this.UPDDisconnect);
     io.on(Protocol.SocketConnect, this.onSocketConnect);
+    io.on(Protocol.SocketDisconnect, this.onSocketDisconnect);
     io.on(Protocol.ClientConnected, this.onClientConnected);
 
     io.on(Events.UPDPing, this.onUPDPing);
@@ -22,26 +24,34 @@ export class App {
   }
 
   onUPDConnect = (id: string) => {
-    info('UPDConnect! ' + id);
+    info('onUPDConnect ' + id);
+  };
+
+  UPDDisconnect = (id: string) => {
+    info('UPDDisconnect ' + id);
   };
 
   onSocketConnect = (id: string) => {
-    info('TCPConnect! ' + id);
+    info('onSocketConnect ' + id);
+  };
+
+  onSocketDisconnect = (id: string) => {
+    info('onSocketDisconnect ' + id);
   };
 
   onClientConnected = (client: Client) => {
-    info('Client connected ' + client.id);
+    info('onClientConnected ' + client.id);
     client.messageUPD(Events.UPDInit);
     client.messageSocket(Events.SocketInit);
   };
 
   onUPDPing = (client: Client) => {
-    console.log('on udp ping ' + client.id);
+    info('onUPDPing ' + client.id);
     client.messageUPD(Events.UPDPong);
   };
 
   onSocketPing = (client: Client) => {
-    console.log('on socket ping ' + client.id);
+    info('onSocketPing ' + client.id);
     client.messageSocket(Events.SocketPong);
   };
 }
