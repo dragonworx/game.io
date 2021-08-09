@@ -1,4 +1,4 @@
-import { IO } from './io';
+import { IO, Ping, startPing, endPing } from './io';
 import { Graphics } from './graphics';
 import { Grid } from '../../core/grid';
 import { GridView } from './gridView';
@@ -13,14 +13,20 @@ export class App {
   grid: Grid;
   graphics: Graphics;
   gridView: GridView;
+  updPing?: Ping;
+  socketPing?: Ping;
 
   constructor() {
     const io = (this.io = new IO());
+
     io.on(Protocol.Connected, this.onConnected);
     io.on(Protocol.UPDMessage, this.onUPDMessage);
     io.on(Protocol.SocketMessage, this.onSocketMessage);
+
     io.on(Events.UPDInit, this.onUPDInit);
     io.on(Events.SocketInit, this.onSocketInit);
+    io.on(Events.UPDPong, this.onUPDPong);
+    io.on(Events.SocketPong, this.onSocketPong);
 
     const grid = (this.grid = new Grid(
       GridSize,
@@ -51,11 +57,23 @@ export class App {
 
   onUPDInit = () => {
     console.log('upd init');
+    this.updPing = startPing();
     this.io.messageUPD(Events.UPDPing);
   };
 
   onSocketInit = () => {
     console.log('socket init');
+    this.socketPing = startPing();
     this.io.messageSocket(Events.SocketPing);
+  };
+
+  onUPDPong = () => {
+    endPing(this.updPing!);
+    console.log('upd pong', this.updPing!.elapsed);
+  };
+
+  onSocketPong = () => {
+    endPing(this.socketPing!);
+    console.log('socket pong', this.socketPing!.elapsed);
   };
 }

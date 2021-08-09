@@ -102,3 +102,20 @@ export class IO extends EventEmitter {
     }
   }
 }
+
+export interface Ping {
+  startTime: number;
+  endTime: number;
+  elapsed: number;
+}
+
+export const startPing = (): Ping => ({
+  startTime: Date.now(),
+  endTime: -1,
+  elapsed: -1,
+});
+
+export const endPing = (ping: Ping) => {
+  ping.endTime = Date.now();
+  ping.elapsed = ping.endTime - ping.startTime;
+};

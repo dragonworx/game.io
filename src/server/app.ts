@@ -10,11 +10,14 @@ export class App {
 
   constructor() {
     const io = (this.io = new IO());
+
     io.on(Protocol.UPDConnect, this.onUPDConnect);
     io.on(Protocol.SocketConnect, this.onSocketConnect);
     io.on(Protocol.ClientConnected, this.onClientConnected);
+
     io.on(Events.UPDPing, this.onUPDPing);
     io.on(Events.SocketPing, this.onSocketPing);
+
     io.listen();
   }
 
@@ -34,9 +37,11 @@ export class App {
 
   onUPDPing = (client: Client) => {
     console.log('on udp ping ' + client.id);
+    client.messageUPD(Events.UPDPong);
   };
 
   onSocketPing = (client: Client) => {
     console.log('on socket ping ' + client.id);
+    client.messageSocket(Events.SocketPong);
   };
 }
