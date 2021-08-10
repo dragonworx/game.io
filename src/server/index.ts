@@ -1,7 +1,7 @@
 import { App } from './app';
-import { sys } from './util';
+import logger from 'node-color-log';
 
-console.clear();
-sys('Server app starting...');
+logger.setLevel('debug');
+logger.color('white').bgColor('blue').log('Server starting up');
 
 new App();

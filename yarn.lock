@@ -965,7 +965,7 @@ chalk@^3.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-chalk@^4.1.0, chalk@^4.1.2:
+chalk@^4.1.0:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.2.tgz#aac4e2b7734a740867aeb16bf02aad556a1e7a01"
   integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
@@ -3235,6 +3235,11 @@ no-case@^3.0.4:
   dependencies:
     lower-case "^2.0.2"
     tslib "^2.0.3"
+
+node-color-log@^5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/node-color-log/-/node-color-log-5.3.1.tgz#26156a8c02f9235f26a1e1d5d28c444e38b7f606"
+  integrity sha512-dO3OtV4F8dB3Ytxfg6H8qN1RqJ+KJRfIYjsfYLScm+pZ93vzDb2l5mVqRU8GDjTZCXTWeA3n8cV8aIHiV5htlQ==
 
 node-forge@^0.10.0:
   version "0.10.0"

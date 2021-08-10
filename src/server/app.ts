@@ -1,6 +1,6 @@
 import { IO } from './io';
 import { Client } from './client';
-import { info } from './util';
+import { debug } from './log';
 import { Player } from '../core/player';
 import { Protocol, Events } from '../core/message';
 
@@ -24,34 +24,34 @@ export class App {
   }
 
   onUPDConnect = (id: string) => {
-    info('onUPDConnect ' + id);
+    debug('onUPDConnect:', id);
   };
 
   UPDDisconnect = (id: string) => {
-    info('UPDDisconnect ' + id);
+    debug('UPDDisconnect:', id);
   };
 
   onSocketConnect = (id: string) => {
-    info('onSocketConnect ' + id);
+    debug('onSocketConnect:', id);
   };
 
   onSocketDisconnect = (id: string) => {
-    info('onSocketDisconnect ' + id);
+    debug('onSocketDisconnect:', id);
   };
 
   onClientConnected = (client: Client) => {
-    info('onClientConnected ' + client.id);
+    debug('onClientConnected:', client.id);
     client.messageUPD(Events.UPDInit);
     client.messageSocket(Events.SocketInit);
   };
 
   onUPDPing = (client: Client) => {
-    info('onUPDPing ' + client.id);
+    debug('onUPDPing:', client.id);
     client.messageUPD(Events.UPDPong);
   };
 
   onSocketPing = (client: Client) => {
-    info('onSocketPing ' + client.id);
+    debug('onSocketPing:', client.id);
     client.messageSocket(Events.SocketPong);
   };
 }

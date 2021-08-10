@@ -1,6 +1,6 @@
 import { ServerChannel, Socket } from './io';
 import { Protocol } from '../core/message';
-import { info } from './util';
+import { debug } from './log';
 
 export class Client {
   id: string;
@@ -12,7 +12,7 @@ export class Client {
   }
 
   messageUPD<T>(type: string, payload?: T) {
-    info(`send upd message "${type}": ${JSON.stringify(payload)}`);
+    debug('messageUPD:', type, JSON.stringify(payload));
     this.upd!.emit(Protocol.UPDMessage, {
       clientId: this.id,
       type,
@@ -21,7 +21,7 @@ export class Client {
   }
 
   messageSocket<T>(type: string, payload?: T) {
-    info(`send socket message "${type}": ${JSON.stringify(payload)}`);
+    debug('messageSocket:', type, JSON.stringify(payload));
     this.socket!.emit(Protocol.SocketMessage, {
       clientId: this.id,
       type,

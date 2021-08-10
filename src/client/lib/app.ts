@@ -43,21 +43,21 @@ export class App {
   }
 
   onConnected = () => {
-    console.log('onConnected:', this.io.clientId);
+    console.debug('onConnected:', this.io.clientId);
   };
 
   onUPDMessage = <T>(message: Message<T>) => {
     const { type, payload } = message;
-    console.log('onUPDMessage:', type, payload);
+    console.debug('onUPDMessage:', type, payload);
   };
 
   onSocketMessage = <T>(message: Message<T>) => {
     const { type, payload } = message;
-    console.log('onSocketMessage:', type, payload);
+    console.debug('onSocketMessage:', type, payload);
   };
 
   onUPDInit = () => {
-    console.log('onUPDInit:');
+    console.debug('onUPDInit:');
     this.startUPDPing();
   };
 
@@ -67,7 +67,7 @@ export class App {
   }
 
   onSocketInit = () => {
-    console.log('onSocketInit:');
+    console.debug('onSocketInit:');
     this.startSocketPing();
   };
 
@@ -78,7 +78,7 @@ export class App {
 
   onUPDPong = () => {
     endPing(this.updPing!);
-    console.log('onUPDPong:', this.updPing!.elapsed);
+    console.debug('onUPDPong:', this.updPing!.elapsed);
     document.getElementById('latency')!.innerText = `upd: ${
       this.updPing!.elapsed
     } socket: ${this.socketPing!.elapsed}`;
@@ -87,7 +87,7 @@ export class App {
 
   onSocketPong = () => {
     endPing(this.socketPing!);
-    console.log('onSocketPong:', this.socketPing!.elapsed);
+    console.debug('onSocketPong:', this.socketPing!.elapsed);
     document.getElementById('latency')!.innerText = `upd: ${
       this.updPing!.elapsed
     } socket: ${this.socketPing!.elapsed}`;

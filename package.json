@@ -24,9 +24,9 @@
   "dependencies": {
     "@geckos.io/client": "^1.4.3",
     "@geckos.io/server": "^1.4.3",
-    "chalk": "^4.1.2",
     "eventemitter3": "^4.0.7",
     "express": "^4.17.1",
+    "node-color-log": "^5.3.1",
     "pixi-ease": "^3.0.7",
     "pixi.js": "^6.1.1",
     "socket.io": "^2.3.0",
