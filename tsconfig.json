@@ -3,11 +3,12 @@
     "noImplicitAny": true,
     "sourceMap": true,
     "target": "ES5",
-    "module": "commonjs",
+    "module": "ESNext",
     "lib": ["ES2015", "DOM", "ScriptHost"],
     "strict": true,
     "strictPropertyInitialization": true,
     "esModuleInterop": true,
+    "moduleResolution": "Node",
     "forceConsistentCasingInFileNames": true
   }
 }

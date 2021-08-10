@@ -1,0 +1,6 @@
+- run game on server
+- server tells clients when it starts, they both start timer and track elapsed
+- server buffer frames @fps (with max buffer size eg. 1 sec)
+- each frame contains position info and game state
+- clients send input immediately
+- clients measure elapsed time and render frame by requesting frame from server for given elapsed time

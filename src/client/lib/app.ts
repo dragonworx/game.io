@@ -7,7 +7,7 @@ import { Protocol, Message, Events } from '../../core/message';
 export const GridDivisions = 10;
 export const GridSize = 500;
 export const GridMargin = 20;
-export const PingIntervalMs = 5000;
+export const PingIntervalMs = 3000;
 
 export class App {
   io: IO;
@@ -79,18 +79,18 @@ export class App {
   onUPDPong = () => {
     endPing(this.updPing!);
     console.debug('onUPDPong:', this.updPing!.elapsed);
-    document.getElementById('latency')!.innerText = `upd: ${
+    document.getElementById('latency-upd')!.innerText = `upd: ${
       this.updPing!.elapsed
-    } socket: ${this.socketPing!.elapsed}`;
+    }`;
     setTimeout(() => this.startUPDPing(), PingIntervalMs);
   };
 
   onSocketPong = () => {
     endPing(this.socketPing!);
     console.debug('onSocketPong:', this.socketPing!.elapsed);
-    document.getElementById('latency')!.innerText = `upd: ${
-      this.updPing!.elapsed
-    } socket: ${this.socketPing!.elapsed}`;
+    document.getElementById('latency-socket')!.innerText = `socket: ${
+      this.socketPing!.elapsed
+    }`;
     setTimeout(() => this.startSocketPing(), PingIntervalMs);
   };
 }

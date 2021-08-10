@@ -22,8 +22,8 @@
   "author": "Yannick Deubel",
   "license": "MIT",
   "dependencies": {
-    "@geckos.io/client": "^1.4.3",
-    "@geckos.io/server": "^1.4.3",
+    "@geckos.io/client": "^2.0.0",
+    "@geckos.io/server": "^2.0.0",
     "eventemitter3": "^4.0.7",
     "express": "^4.17.1",
     "node-color-log": "^5.3.1",

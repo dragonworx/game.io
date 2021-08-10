@@ -7,7 +7,7 @@ module.exports = function (_env, argv) {
   console.log(chalk.cyanBright.bold(`Building [${environment.toUpperCase()}] Server...`));
   return {
     mode: environment,
-    target: 'node',
+    externalsPresets: { node: true },
     entry: './src/server/index.ts',
     output: {
       path: path.resolve(__dirname, './dist/server'),
@@ -16,7 +16,9 @@ module.exports = function (_env, argv) {
     resolve: {
       extensions: ['.ts', '.tsx', '.js'],
     },
-    externals: [nodeExternals()],
+    externals: [nodeExternals({
+      allowlist: [/^@geckos/]
+    })],
     module: {
       rules: [{ test: /\.tsx?$/, loader: 'ts-loader' }],
     },

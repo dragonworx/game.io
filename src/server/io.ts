@@ -8,6 +8,7 @@ import EventEmitter from 'eventemitter3';
 import { Message, Protocol } from '../core/message';
 import { Client } from './client';
 import { debug } from './log';
+import socketio from 'socket.io';
 
 export { ServerChannel } from '@geckos.io/server';
 
@@ -35,7 +36,7 @@ export class IO extends EventEmitter {
     const upd = (this.upd = geckos({ iceServers }));
     upd.onConnection(this.onUPDConnect);
 
-    const socket = (this.socket = require('socket.io')());
+    const socket = (this.socket = socketio());
     socket.on('connection', this.onSocketConnect);
   }
 

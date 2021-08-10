@@ -32,8 +32,15 @@ header form {
   border: 1px solid #ccc;
 }
 
-#latency {
+.latency {
   position: absolute;
-  top: 5px;
   right: 5px;
+}
+
+#latency-upd {
+  top: 5px;
+}
+
+#latency-socket {
+  top: 25px;
 }
