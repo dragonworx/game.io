@@ -1,15 +1,15 @@
-import { Component } from './component';
+import { EventEmitter } from 'eventemitter3';
 import * as PIXI from 'pixi.js';
-import { ease } from 'pixi-ease';
 import { Graphics } from '../graphics';
 
-export class PlayerJoinedNotice extends Component<
-  [Graphics, string],
-  PIXI.Text
-> {
-  mount() {
-    const [graphics, playerName] = this.input!;
-    const text = new PIXI.Text(`"${playerName}" joined!`, {
+export class Alert extends EventEmitter {
+  text: PIXI.Text;
+  graphics: Graphics;
+
+  constructor(graphics: Graphics, message: string) {
+    super();
+    this.graphics = graphics;
+    this.text = new PIXI.Text(message, {
       fontFamily: 'Orbitron',
       fontSize: 26,
       fill: '#ffffff',
@@ -20,7 +20,10 @@ export class PlayerJoinedNotice extends Component<
       dropShadowAngle: Math.PI / 6,
       dropShadowDistance: 6,
     });
+  }
 
+  show() {
+    const { text, graphics } = this;
     const [centerX, centerY] = graphics.center;
     text.x = centerX;
     text.y = 0;
@@ -38,7 +41,17 @@ export class PlayerJoinedNotice extends Component<
         'easeInOutBack',
       )
       .on('complete', () => {
-        this.done(text);
+        this.emit('shown');
+      });
+  }
+
+  hide(x: number, y: number, duration: number = 1000, wait: number = 1000) {
+    const { graphics, text } = this;
+    graphics
+      .ease(text, { x, y, width: 0, height: 0 }, duration, 'easeOutBack', wait)
+      .on('complete', () => {
+        graphics.removeObject(text);
+        this.emit('hidden');
       });
   }
 }

@@ -1,5 +1,5 @@
 import { ServerChannel, Socket } from './io';
-import { Protocol, ServerEvents } from '../core/message';
+import { Protocol, ServerEvents } from '../core/messaging';
 import { debug } from './log';
 
 export class Client {
@@ -12,7 +12,7 @@ export class Client {
   }
 
   messageUDP<T>(eventName: ServerEvents, payload?: T) {
-    debug('messageUDP:', eventName, JSON.stringify(payload));
+    debug(`messageUDP[${this.id}]:`, eventName, JSON.stringify(payload));
     this.udp!.emit(Protocol.UDPMessage, {
       clientId: this.id,
       type: eventName,
@@ -21,7 +21,7 @@ export class Client {
   }
 
   messageSocket<T>(eventName: ServerEvents, payload?: T) {
-    debug('messageSocket:', eventName, JSON.stringify(payload));
+    debug(`messageSocket[${this.id}]:`, eventName, JSON.stringify(payload));
     this.socket!.emit(Protocol.SocketMessage, {
       clientId: this.id,
       type: eventName,

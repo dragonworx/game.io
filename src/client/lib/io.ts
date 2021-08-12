@@ -2,7 +2,7 @@ import geckos, { ClientChannel, Data } from '@geckos.io/client';
 import { EventEmitter } from 'eventemitter3';
 import io, { Socket } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
-import { Message, Protocol } from '../../core/message';
+import { Message, Protocol } from '../../core/messaging';
 
 export class IO extends EventEmitter {
   clientId: string;

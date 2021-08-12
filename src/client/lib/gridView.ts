@@ -5,7 +5,7 @@ import { Graphics, PIXI } from './graphics';
 const degToRad = (deg: number) => deg * (Math.PI / 180);
 const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const IntroAnimationDurationMs = 2000;
+const IntroAnimationDurationMs = 5000;
 
 export class GridView {
   grid: Grid;
@@ -19,13 +19,18 @@ export class GridView {
     this.gridMargin = gridMargin;
 
     this.cellSpriteMap = new Map();
-
-    this.createGridCells();
   }
 
-  async createGridCells() {
+  get center(): [number, number] {
+    return [
+      this.gridMargin + this.grid.width / 2,
+      this.gridMargin + this.grid.height / 2,
+    ];
+  }
+
+  init() {
     const { grid, gridMargin, graphics, cellSpriteMap } = this;
-    const texture = await this.graphics.loadTexture('cell', 'cell.png');
+    const texture = graphics.textures.get('cell');
     grid.forEach((cell: Cell, h: number, v: number, x: number, y: number) => {
       const sprite = new PIXI.Sprite(texture);
       sprite.anchor.x = 0.5;
@@ -37,20 +42,27 @@ export class GridView {
       sprite.alpha = 0;
       graphics.addObject(sprite);
       cellSpriteMap.set(cell, sprite);
-      graphics.ease(
-        sprite,
-        {
-          width: grid.cellWidth,
-          height: grid.cellHeight,
-          alpha: 1,
-        },
-        Math.round(Math.random() * IntroAnimationDurationMs),
-        'easeOutBack',
-      );
+      graphics
+        .ease(
+          sprite,
+          {
+            width: grid.cellWidth,
+            height: grid.cellHeight,
+            alpha: 1,
+          },
+          Math.round(Math.random() * IntroAnimationDurationMs),
+          'easeOutBack',
+        )
+        .on('complete', () => {
+          (sprite.width = grid.cellWidth), (sprite.height = grid.cellHeight);
+          sprite.alpha = 1;
+        });
     });
-    setTimeout(
-      () => document.querySelector('#main header')?.classList.add('expanded'),
-      IntroAnimationDurationMs / 3,
-    );
+  }
+
+  getPosition(h: number, v: number): [number, number] {
+    const { gridMargin, grid } = this;
+    const { cellWidth, cellHeight } = grid;
+    return [gridMargin + cellWidth * h, gridMargin + cellHeight * v];
   }
 }

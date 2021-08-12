@@ -15,14 +15,16 @@
     <div id="main">
       <header>
         <form id="playerName">
-          <label>Name: <input type="text" value="Ali" autofocus /></label
+          <label
+            >Name:
+            <input type="text" value="Ali" autofocus maxlength="10" /></label
           ><input type="submit" value="Ready!" />
         </form>
-        <ul id="latency">
-          <li>udp: <span id="latency-udp"></span></li>
-          <li>tcp: <span id="latency-socket"></span></li>
-        </ul>
       </header>
+      <ul id="latency">
+        <li>udp: <span id="latency-udp"></span></li>
+        <li>tcp: <span id="latency-socket"></span></li>
+      </ul>
       <div id="canvas"></div>
     </div>
   </body>

@@ -33,5 +33,8 @@ export enum ServerEvents {
   SocketInit = 'socketInit',
   UDPPong = 'udpPong',
   SocketPong = 'socketPong',
+  InitConnection = 'initConnection',
   PlayerJoined = 'playerJoined',
+  PlayerDisconnected = 'playerDisconnected',
+  GameInit = 'gameInit',
 }

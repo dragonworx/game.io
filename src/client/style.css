@@ -43,6 +43,20 @@ header.expanded {
   height: 50px;
 }
 
+header.collapsed {
+  height: 20px;
+}
+
+#playerName {
+  transition: top 1s;
+  position: relative;
+  top: 0px;
+}
+
+#playerName.ready {
+  top: 100px;
+}
+
 #playerName input[type='text'] {
   height: 18px;
   vertical-align: top;
@@ -61,6 +75,7 @@ header.expanded {
   border-style: groove;
   height: 18px;
   vertical-align: top;
+  cursor: pointer;
 }
 
 #canvas {
@@ -74,7 +89,7 @@ header.expanded {
   margin: 0;
   list-style: none;
   padding: 0;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 #latency-udp {

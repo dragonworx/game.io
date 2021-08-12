@@ -3,11 +3,10 @@ import { Client } from './client';
 import { debug } from './log';
 import { Player } from './player';
 import { Game } from './game';
-import { Protocol, ServerEvents, ClientEvents } from '../core/message';
+import { Protocol, ServerEvents, ClientEvents } from '../core/messaging';
 
 export class App {
   io: IO;
-  players: Player[] = [];
   game: Game;
 
   constructor() {
@@ -42,14 +41,21 @@ export class App {
     debug('onSocketConnect:', id);
   };
 
-  onSocketDisconnect = (id: string) => {
-    debug('onSocketDisconnect:', id);
+  onSocketDisconnect = (clientId: string) => {
+    debug('onSocketDisconnect.Client:', clientId);
+    this.game.removePlayer(clientId);
+    this.io.broadcastSocket(ServerEvents.PlayerDisconnected, clientId);
   };
 
   onClientConnected = (client: Client) => {
     debug('onClientConnected:', client.id);
     client.messageUDP(ServerEvents.UDPInit);
     client.messageSocket(ServerEvents.SocketInit);
+    debug(this.game.getInitGameState());
+    client.messageSocket(
+      ServerEvents.InitConnection,
+      this.game.getInitGameState(),
+    );
   };
 
   onUDPPing = (client: Client) => {
@@ -63,11 +69,20 @@ export class App {
   };
 
   onPlayerJoin = (client: Client, playerName: string) => {
+    const { game, io } = this;
+    const { players } = game;
     const player = new Player(client, playerName);
-    this.game.addPlayer(player);
-    this.io.broadcastSocket(ServerEvents.PlayerJoined, {
+    game.addPlayer(player);
+    io.broadcastSocket(ServerEvents.PlayerJoined, {
       clientId: client.id,
       name: playerName,
     });
+    const allPlayersJoined = io.clients.size === players.length;
+    console.log(io.clients.size, players.length);
+    if (allPlayersJoined) {
+      setTimeout(() => {
+        io.broadcastSocket(ServerEvents.GameInit);
+      }, 2000);
+    }
   };
 }

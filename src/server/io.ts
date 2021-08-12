@@ -5,7 +5,7 @@ import geckos, {
   Data,
 } from '@geckos.io/server';
 import EventEmitter from 'eventemitter3';
-import { Message, Protocol, ServerEvents } from '../core/message';
+import { Message, Protocol, ServerEvents } from '../core/messaging';
 import { Client } from './client';
 import { debug } from './log';
 import socketio from 'socket.io';
@@ -77,11 +77,11 @@ export class IO extends EventEmitter {
     socket.on('disconnect', () => {
       this.clients.forEach(client => {
         if (client.socket!.id === id) {
-          debug('onSocketConnect.disconnect:' + client.id);
+          debug('onSocketConnect.disconnect.deleted:' + client.id);
           this.clients.delete(client.id);
+          this.emit(Protocol.SocketDisconnect, client.id);
         }
       });
-      this.emit(Protocol.SocketDisconnect, id);
     });
     socket.on(Protocol.SocketMessage, (data: Message<any>) => {
       const message = data as Message<any>;

@@ -8,11 +8,31 @@ export const waitMs = (ms: number) =>
 export enum EaseFn {}
 
 export { PIXI };
+export type Texture = PIXI.Texture<PIXI.Resource>;
+
+export type TextureAssetName = 'cell' | 'blade';
+
+export type TextureAsset = {
+  name: TextureAssetName;
+  path: string;
+};
+
+export const textureAssets: TextureAsset[] = [
+  {
+    name: 'cell',
+    path: 'cell.png',
+  },
+  {
+    name: 'blade',
+    path: 'blade.png',
+  },
+];
 
 export class Graphics {
   pixi: PIXI.Application;
   width: number;
   height: number;
+  textures: Map<TextureAssetName, Texture> = new Map();
 
   constructor(width: number, height: number) {
     this.width = width;
@@ -30,20 +50,27 @@ export class Graphics {
     return [this.width / 2, this.height / 2];
   }
 
-  loadTexture(
-    assetName: string,
-    path: string,
-  ): Promise<PIXI.Texture<PIXI.Resource>> {
-    return new Promise((resolve, reject) => {
-      this.pixi.loader.add(assetName, path).load((_loader, resources) => {
-        const texture = resources[assetName].texture;
-        if (texture) {
-          resolve(texture);
-        } else {
-          reject(new Error());
-        }
+  preload() {
+    return new Promise(resolve => {
+      const loader = PIXI.Loader.shared;
+      textureAssets.forEach(asset => loader.add(asset.name, asset.path));
+      loader.load((_loader, resources) => {
+        textureAssets.forEach(asset =>
+          this.textures.set(asset.name, resources[asset.name].texture!),
+        );
+        resolve(this);
       });
     });
+  }
+
+  loadTexture(assetName: TextureAssetName, path: string) {
+    this.pixi.loader.add(assetName, path).load((_loader, resources) => {
+      const texture = resources[assetName].texture;
+      if (texture) {
+        this.textures.set(assetName, texture);
+      }
+    });
+    return this;
   }
 
   addObject(object: PIXI.DisplayObject) {
@@ -70,5 +97,13 @@ export class Graphics {
       wait,
       repeat,
     });
+  }
+
+  addTicker(fn: (elapsed: number) => void) {
+    this.pixi.ticker.add(fn);
+  }
+
+  removeTicker(fn: (elapsed: number) => void) {
+    this.pixi.ticker.remove(fn);
   }
 }

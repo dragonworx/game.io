@@ -1,28 +1,24 @@
 import { IO, Ping, startPing, endPing } from './io';
-import { Graphics, PIXI } from './graphics';
-import { Grid } from '../../core/grid';
-import { GridView } from './gridView';
+import { Graphics } from './graphics';
 import {
   Protocol,
   Message,
   ServerEvents,
   ClientEvents,
-} from '../../core/message';
+} from '../../core/messaging';
 import { PlayerNameInput } from './components/playerNameInput';
-import { PlayerJoinedNotice } from './components/playerJoinedNotice';
 import { Game } from './game';
-import { Player } from './player';
+import { InitGameState, PlayerInfo } from '../../core';
 
-export const GridDivisions = 10;
+export const GridDivisions = 21;
 export const GridSize = 500;
 export const GridMargin = 20;
 export const PingIntervalMs = 10000;
 
 export class App {
   io: IO;
-  grid: Grid;
   graphics: Graphics;
-  gridView: GridView;
+
   udpPing?: Ping;
   socketPing?: Ping;
   game: Game;
@@ -30,35 +26,36 @@ export class App {
   constructor() {
     const io = (this.io = new IO());
 
-    this.game = new Game();
-
     io.on(Protocol.Connected, this.onConnected);
     io.on(Protocol.UDPMessage, this.onUDPMessage);
     io.on(Protocol.SocketMessage, this.onSocketMessage);
 
     io.on(ServerEvents.UDPInit, this.onUDPInit);
     io.on(ServerEvents.SocketInit, this.onSocketInit);
+    io.on(ServerEvents.InitConnection, this.onInitConnection);
     io.on(ServerEvents.UDPPong, this.onUDPPong);
     io.on(ServerEvents.SocketPong, this.onSocketPong);
     io.on(ServerEvents.PlayerJoined, this.onPlayerJoined);
-
-    const grid = (this.grid = new Grid(
-      GridSize,
-      GridSize,
-      GridDivisions,
-      GridDivisions,
-    ));
+    io.on(ServerEvents.PlayerDisconnected, this.onPlayerDisconnected);
+    io.on(ServerEvents.GameInit, this.onGameInit);
 
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
 
-    this.gridView = new GridView(grid, graphics, GridMargin);
+    this.game = new Game(graphics, GridSize, GridDivisions, GridMargin);
+  }
 
-    new PlayerNameInput().onDone(this.onPlayerNameSubmit);
+  init() {
+    this.graphics.preload().then(() => {
+      this.game.init();
+      document.querySelector('#main header')!.classList.add('expanded');
+      new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
+    });
   }
 
   onConnected = () => {
     console.debug('onConnected:', this.io.clientId);
+    this.init();
   };
 
   onUDPMessage = <T>(message: Message<T>) => {
@@ -78,7 +75,7 @@ export class App {
 
   startUDPPing() {
     this.udpPing = startPing();
-    this.io.messageUDP(ClientEvents.UDPPing);
+    // this.io.messageUDP(ClientEvents.UDPPing);
   }
 
   onSocketInit = () => {
@@ -88,7 +85,7 @@ export class App {
 
   startSocketPing() {
     this.socketPing = startPing();
-    this.io.messageSocket(ClientEvents.SocketPing);
+    // this.io.messageSocket(ClientEvents.SocketPing);
   }
 
   onUDPPong = () => {
@@ -109,23 +106,29 @@ export class App {
     setTimeout(() => this.startSocketPing(), PingIntervalMs);
   };
 
+  onInitConnection = (gameState: InitGameState) => {
+    const { game } = this;
+    game.status = gameState.status;
+    gameState.players.forEach(player => game.newPlayer(player));
+  };
+
   onPlayerNameSubmit = (playerName: string) => {
+    document.querySelector('#playerName')!.classList.add('ready');
+    const header = document.querySelector('#main header')!;
+    header.classList.remove('expanded');
+    header.classList.add('collapsed');
     this.io.messageSocket(ClientEvents.PlayerJoin, playerName);
   };
 
-  onPlayerJoined = (info: { clientId: string; name: string }) => {
-    const { game, graphics } = this;
-    new PlayerJoinedNotice([this.graphics, info.name]).onDone(
-      (text: PIXI.Text) => {
-        const player = new Player(info.clientId);
-        game.addPlayer(player);
-        const [x, y] = player.initialPosition;
-        graphics
-          .ease(text, { x, y, width: 0, height: 0 }, 1000, 'easeOutBack', 1000)
-          .on('complete', () => {
-            graphics.removeObject(text);
-          });
-      },
-    );
+  onPlayerJoined = (info: PlayerInfo) => {
+    this.game.joinPlayer(info);
+  };
+
+  onPlayerDisconnected = (clientId: string) => {
+    this.game.removePlayer(clientId);
+  };
+
+  onGameInit = () => {
+    this.game.showCountdown();
   };
 }
