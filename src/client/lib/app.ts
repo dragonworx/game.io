@@ -3,30 +3,31 @@ import { Graphics } from './graphics';
 import { Grid } from '../../core/grid';
 import { GridView } from './gridView';
 import { Protocol, Message, Events } from '../../core/message';
+import { PlayerNameInput } from './playerNameInput';
 
 export const GridDivisions = 10;
 export const GridSize = 500;
 export const GridMargin = 20;
-export const PingIntervalMs = 3000;
+export const PingIntervalMs = 1000;
 
 export class App {
   io: IO;
   grid: Grid;
   graphics: Graphics;
   gridView: GridView;
-  updPing?: Ping;
+  udpPing?: Ping;
   socketPing?: Ping;
 
   constructor() {
     const io = (this.io = new IO());
 
     io.on(Protocol.Connected, this.onConnected);
-    io.on(Protocol.UPDMessage, this.onUPDMessage);
+    io.on(Protocol.UDPMessage, this.onUDPMessage);
     io.on(Protocol.SocketMessage, this.onSocketMessage);
 
-    io.on(Events.UPDInit, this.onUPDInit);
+    io.on(Events.UDPInit, this.onUDPInit);
     io.on(Events.SocketInit, this.onSocketInit);
-    io.on(Events.UPDPong, this.onUPDPong);
+    io.on(Events.UDPPong, this.onUDPPong);
     io.on(Events.SocketPong, this.onSocketPong);
 
     const grid = (this.grid = new Grid(
@@ -40,15 +41,17 @@ export class App {
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
 
     this.gridView = new GridView(grid, graphics, GridMargin);
+
+    new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
   }
 
   onConnected = () => {
     console.debug('onConnected:', this.io.clientId);
   };
 
-  onUPDMessage = <T>(message: Message<T>) => {
+  onUDPMessage = <T>(message: Message<T>) => {
     const { type, payload } = message;
-    console.debug('onUPDMessage:', type, payload);
+    console.debug('onUDPMessage:', type, payload);
   };
 
   onSocketMessage = <T>(message: Message<T>) => {
@@ -56,14 +59,14 @@ export class App {
     console.debug('onSocketMessage:', type, payload);
   };
 
-  onUPDInit = () => {
-    console.debug('onUPDInit:');
-    this.startUPDPing();
+  onUDPInit = () => {
+    console.debug('onUDPInit:');
+    this.startUDPPing();
   };
 
-  startUPDPing() {
-    this.updPing = startPing();
-    this.io.messageUPD(Events.UPDPing);
+  startUDPPing() {
+    this.udpPing = startPing();
+    this.io.messageUDP(Events.UDPPing);
   }
 
   onSocketInit = () => {
@@ -76,21 +79,25 @@ export class App {
     this.io.messageSocket(Events.SocketPing);
   }
 
-  onUPDPong = () => {
-    endPing(this.updPing!);
-    console.debug('onUPDPong:', this.updPing!.elapsed);
-    document.getElementById('latency-upd')!.innerText = `upd: ${
-      this.updPing!.elapsed
-    }`;
-    setTimeout(() => this.startUPDPing(), PingIntervalMs);
+  onUDPPong = () => {
+    endPing(this.udpPing!);
+    console.debug('onUDPPong:', this.udpPing!.elapsed);
+    document.getElementById('latency-udp')!.innerText = String(
+      this.udpPing!.elapsed,
+    );
+    setTimeout(() => this.startUDPPing(), PingIntervalMs);
   };
 
   onSocketPong = () => {
     endPing(this.socketPing!);
     console.debug('onSocketPong:', this.socketPing!.elapsed);
-    document.getElementById('latency-socket')!.innerText = `socket: ${
-      this.socketPing!.elapsed
-    }`;
+    document.getElementById('latency-socket')!.innerText = String(
+      this.socketPing!.elapsed,
+    );
     setTimeout(() => this.startSocketPing(), PingIntervalMs);
+  };
+
+  onPlayerNameSubmit = (value: string) => {
+    alert(value);
   };
 }

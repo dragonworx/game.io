@@ -11,24 +11,24 @@ export class App {
   constructor() {
     const io = (this.io = new IO());
 
-    io.on(Protocol.UPDConnect, this.onUPDConnect);
-    io.on(Protocol.UPDDisconnect, this.UPDDisconnect);
+    io.on(Protocol.UDPConnect, this.onUDPConnect);
+    io.on(Protocol.UDPDisconnect, this.UDPDisconnect);
     io.on(Protocol.SocketConnect, this.onSocketConnect);
     io.on(Protocol.SocketDisconnect, this.onSocketDisconnect);
     io.on(Protocol.ClientConnected, this.onClientConnected);
 
-    io.on(Events.UPDPing, this.onUPDPing);
+    io.on(Events.UDPPing, this.onUDPPing);
     io.on(Events.SocketPing, this.onSocketPing);
 
     io.listen();
   }
 
-  onUPDConnect = (id: string) => {
-    debug('onUPDConnect:', id);
+  onUDPConnect = (id: string) => {
+    debug('onUDPConnect:', id);
   };
 
-  UPDDisconnect = (id: string) => {
-    debug('UPDDisconnect:', id);
+  UDPDisconnect = (id: string) => {
+    debug('UDPDisconnect:', id);
   };
 
   onSocketConnect = (id: string) => {
@@ -41,13 +41,13 @@ export class App {
 
   onClientConnected = (client: Client) => {
     debug('onClientConnected:', client.id);
-    client.messageUPD(Events.UPDInit);
+    client.messageUDP(Events.UDPInit);
     client.messageSocket(Events.SocketInit);
   };
 
-  onUPDPing = (client: Client) => {
-    debug('onUPDPing:', client.id);
-    client.messageUPD(Events.UPDPong);
+  onUDPPing = (client: Client) => {
+    debug('onUDPPing:', client.id);
+    client.messageUDP(Events.UDPPong);
   };
 
   onSocketPing = (client: Client) => {

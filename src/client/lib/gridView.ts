@@ -7,6 +7,9 @@ import { Graphics } from './graphics';
 const degToRad = (deg: number) => deg * (Math.PI / 180);
 const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// const IntroAnimationDurationMs = 2500;
+const IntroAnimationDurationMs = 100;
+
 export class GridView {
   grid: Grid;
   graphics: Graphics;
@@ -45,10 +48,14 @@ export class GridView {
           alpha: 1,
         },
         {
-          duration: Math.round(Math.random() * 2500),
+          duration: Math.round(Math.random() * IntroAnimationDurationMs),
           ease: 'easeInOutBack',
         },
       );
     });
+    setTimeout(
+      () => document.querySelector('#main header')?.classList.add('expanded'),
+      IntroAnimationDurationMs / 3,
+    );
   }
 }

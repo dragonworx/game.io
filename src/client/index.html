@@ -4,15 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Game.io</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="main">
       <header>
-        <form>
-          <label>Name: <input /></label><input type="submit" value="Ready!" />
+        <form id="playerName">
+          <label>Name: <input type="text" /></label
+          ><input type="submit" value="Ready!" />
         </form>
-        <div id="latency-upd" class="latency"></div>
-        <div id="latency-socket" class="latency"></div>
+        <ul id="latency">
+          <li>udp: <span id="latency-udp"></span></li>
+          <li>tcp: <span id="latency-socket"></span></li>
+        </ul>
       </header>
       <div id="canvas"></div>
     </div>

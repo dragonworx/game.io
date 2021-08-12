@@ -4,16 +4,16 @@ import { debug } from './log';
 
 export class Client {
   id: string;
-  upd?: ServerChannel;
+  udp?: ServerChannel;
   socket?: Socket;
 
   constructor(id: string) {
     this.id = id;
   }
 
-  messageUPD<T>(type: string, payload?: T) {
-    debug('messageUPD:', type, JSON.stringify(payload));
-    this.upd!.emit(Protocol.UPDMessage, {
+  messageUDP<T>(type: string, payload?: T) {
+    debug('messageUDP:', type, JSON.stringify(payload));
+    this.udp!.emit(Protocol.UDPMessage, {
       clientId: this.id,
       type,
       payload,

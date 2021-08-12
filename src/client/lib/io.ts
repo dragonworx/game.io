@@ -8,7 +8,7 @@ export class IO extends EventEmitter {
   clientId: string;
   udp: ClientChannel;
   socket: typeof Socket;
-  isUPDConnected: boolean = false;
+  isUDPConnected: boolean = false;
   isSocketConnected: boolean = false;
 
   constructor() {
@@ -17,7 +17,7 @@ export class IO extends EventEmitter {
     const channel = (this.udp = geckos());
     channel.onConnect(this.onUDPConnect);
     channel.onDisconnect(this.onUDPDisconnect);
-    channel.on(Protocol.UPDMessage, this.onUPDMessage);
+    channel.on(Protocol.UDPMessage, this.onUDPMessage);
 
     const socket = (this.socket = io(
       window.location.protocol + '//' + window.location.hostname + ':3000/',
@@ -32,29 +32,29 @@ export class IO extends EventEmitter {
 
   onUDPConnect = (error?: Error) => {
     if (error) {
-      return this.emit(Protocol.UPDConnectError);
+      return this.emit(Protocol.UDPConnectError);
     }
-    this.isUPDConnected = true;
-    this.udp.emit(Protocol.UPDRegister, this.clientId);
-    this.emit(Protocol.UPDConnect);
+    this.isUDPConnected = true;
+    this.udp.emit(Protocol.UDPRegister, this.clientId);
+    this.emit(Protocol.UDPConnect);
     this.validateConnection();
   };
 
   onUDPDisconnect = () => {
-    this.isUPDConnected = false;
-    this.emit(Protocol.UPDDisconnect);
+    this.isUDPConnected = false;
+    this.emit(Protocol.UDPDisconnect);
     this.validateConnection();
   };
 
-  onUPDMessage = (data: Data) => {
+  onUDPMessage = (data: Data) => {
     const message = data as Message<any>;
-    this.emit(Protocol.UPDMessage, message);
+    this.emit(Protocol.UDPMessage, message);
     this.emit(message.type, message.payload);
   };
 
-  messageUPD<T>(type: string, payload?: T) {
-    console.debug('messageUPD:', type, payload);
-    this.udp.emit(Protocol.UPDMessage, {
+  messageUDP<T>(type: string, payload?: T) {
+    console.debug('messageUDP:', type, payload);
+    this.udp.emit(Protocol.UDPMessage, {
       clientId: this.clientId,
       type,
       payload,
@@ -94,7 +94,7 @@ export class IO extends EventEmitter {
   // general
 
   validateConnection() {
-    const { isSocketConnected, isUPDConnected: isUDPConnected } = this;
+    const { isSocketConnected, isUDPConnected: isUDPConnected } = this;
     if (isSocketConnected && isUDPConnected) {
       this.emit(Protocol.Connected);
     } else if (!isSocketConnected && !isUDPConnected) {

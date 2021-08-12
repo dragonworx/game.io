@@ -5,25 +5,25 @@ export interface Message<T> {
 }
 
 export enum Protocol {
-  UPDConnect = '_updConnect',
+  UDPConnect = '_udpConnect',
   SocketConnect = '_socketConnect',
-  UPDRegister = '_updRegister',
+  UDPRegister = '_udpRegister',
   SocketRegister = '_socketRegister',
-  UPDMessage = '_updMessage',
+  UDPMessage = '_udpMessage',
   SocketMessage = '_socketMessage',
   Connected = '_connected',
   Disconnected = '_disconnected',
-  UPDConnectError = '_updConnectError',
-  UPDDisconnect = '_updDisconnect',
+  UDPConnectError = '_udpConnectError',
+  UDPDisconnect = '_udpDisconnect',
   SocketDisconnect = '_socketDisconnect',
   ClientConnected = '_clientConnected',
 }
 
 export enum Events {
-  UPDInit = 'updInit',
+  UDPInit = 'udpInit',
   SocketInit = 'socketInit',
-  UPDPing = 'updPing',
-  UPDPong = 'updPong',
+  UDPPing = 'udpPing',
+  UDPPong = 'udpPong',
   SocketPing = 'socketPing',
   SocketPong = 'socketPong',
 }

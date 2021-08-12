@@ -26,46 +26,46 @@ export { Socket };
 export const TCPListenPort = 3000;
 
 export class IO extends EventEmitter {
-  upd: GeckosServer;
+  udp: GeckosServer;
   socket: any;
   clients: Map<string, Client> = new Map();
 
   constructor() {
     super();
 
-    const upd = (this.upd = geckos({ iceServers }));
-    upd.onConnection(this.onUPDConnect);
+    const udp = (this.udp = geckos({ iceServers }));
+    udp.onConnection(this.onUDPConnect);
 
     const socket = (this.socket = socketio());
     socket.on('connection', this.onSocketConnect);
   }
 
   listen() {
-    this.upd.listen();
+    this.udp.listen();
     this.socket.listen(TCPListenPort);
   }
 
-  onUPDConnect = (channel: ServerChannel) => {
+  onUDPConnect = (channel: ServerChannel) => {
     const { id } = channel;
-    channel.on(Protocol.UPDRegister, (clientId: Data) => {
-      debug('onUPDConnect.UPDRegister:', clientId, id);
+    channel.on(Protocol.UDPRegister, (clientId: Data) => {
+      debug('onUDPConnect.UDPRegister:', clientId, id);
       this.registerClient(String(clientId), channel);
     });
-    channel.on(Protocol.UPDMessage, (data: Data) => {
+    channel.on(Protocol.UDPMessage, (data: Data) => {
       const message = data as Message<any>;
       const { clientId, type, payload } = message;
       debug(
-        'onUPDConnect.UPDMessage:',
+        'onUDPConnect.UDPMessage:',
         clientId,
         type,
         JSON.stringify(payload),
       );
-      this.emit(Protocol.UPDMessage, message);
+      this.emit(Protocol.UDPMessage, message);
       const client = this.clients.get(clientId)!;
       this.emit(message.type, client, message.payload);
     });
-    channel.onDisconnect = () => this.emit(Protocol.UPDDisconnect, id);
-    this.emit(Protocol.UPDConnect, id);
+    channel.onDisconnect = () => this.emit(Protocol.UDPDisconnect, id);
+    this.emit(Protocol.UDPConnect, id);
   };
 
   onSocketConnect = (socket: Socket) => {
@@ -99,7 +99,7 @@ export class IO extends EventEmitter {
     this.emit(Protocol.SocketConnect, id);
   };
 
-  registerClient(clientId: string, upd?: ServerChannel, socket?: Socket) {
+  registerClient(clientId: string, udp?: ServerChannel, socket?: Socket) {
     const { clients } = this;
     if (!clients.has(clientId)) {
       debug('registerClient:', clientId);
@@ -107,9 +107,9 @@ export class IO extends EventEmitter {
       clients.set(clientId, client);
     }
     const client = clients.get(clientId)!;
-    upd && (client.upd = upd);
+    udp && (client.udp = udp);
     socket && (client.socket = socket);
-    if (client.upd && client.socket) {
+    if (client.udp && client.socket) {
       this.emit(Protocol.ClientConnected, client);
     }
   }
