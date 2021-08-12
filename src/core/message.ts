@@ -4,6 +4,7 @@ export interface Message<T> {
   payload?: T;
 }
 
+// sent by client
 export enum Protocol {
   UDPConnect = '_udpConnect',
   SocketConnect = '_socketConnect',
@@ -19,11 +20,18 @@ export enum Protocol {
   ClientConnected = '_clientConnected',
 }
 
-export enum Events {
+// sent by client
+export enum ClientEvents {
+  UDPPing = 'udpPing',
+  SocketPing = 'socketPing',
+  PlayerJoin = 'playerJoin',
+}
+
+// sent by server
+export enum ServerEvents {
   UDPInit = 'udpInit',
   SocketInit = 'socketInit',
-  UDPPing = 'udpPing',
   UDPPong = 'udpPong',
-  SocketPing = 'socketPing',
   SocketPong = 'socketPong',
+  PlayerJoined = 'playerJoined',
 }

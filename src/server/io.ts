@@ -5,7 +5,7 @@ import geckos, {
   Data,
 } from '@geckos.io/server';
 import EventEmitter from 'eventemitter3';
-import { Message, Protocol } from '../core/message';
+import { Message, Protocol, ServerEvents } from '../core/message';
 import { Client } from './client';
 import { debug } from './log';
 import socketio from 'socket.io';
@@ -112,5 +112,13 @@ export class IO extends EventEmitter {
     if (client.udp && client.socket) {
       this.emit(Protocol.ClientConnected, client);
     }
+  }
+
+  broadcastSocket<T>(eventName: ServerEvents, payload?: T) {
+    this.clients.forEach(client => client.messageSocket(eventName, payload));
+  }
+
+  broadcastUDP<T>(eventName: ServerEvents, payload?: T) {
+    this.clients.forEach(client => client.messageUDP(eventName, payload));
   }
 }

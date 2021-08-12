@@ -1,14 +1,11 @@
-import * as PIXI from 'pixi.js';
-import { Ease, ease } from 'pixi-ease';
 import { Cell } from '../../core/cell';
 import { Grid } from '../../core/grid';
-import { Graphics } from './graphics';
+import { Graphics, PIXI } from './graphics';
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
 const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// const IntroAnimationDurationMs = 2500;
-const IntroAnimationDurationMs = 100;
+const IntroAnimationDurationMs = 2000;
 
 export class GridView {
   grid: Grid;
@@ -38,19 +35,17 @@ export class GridView {
       sprite.width = 0;
       sprite.height = 0;
       sprite.alpha = 0;
-      graphics.addSprite(sprite);
+      graphics.addObject(sprite);
       cellSpriteMap.set(cell, sprite);
-      ease.add(
+      graphics.ease(
         sprite,
         {
           width: grid.cellWidth,
           height: grid.cellHeight,
           alpha: 1,
         },
-        {
-          duration: Math.round(Math.random() * IntroAnimationDurationMs),
-          ease: 'easeInOutBack',
-        },
+        Math.round(Math.random() * IntroAnimationDurationMs),
+        'easeOutBack',
       );
     });
     setTimeout(

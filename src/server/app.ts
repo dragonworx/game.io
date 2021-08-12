@@ -1,24 +1,31 @@
 import { IO } from './io';
 import { Client } from './client';
 import { debug } from './log';
-import { Player } from '../core/player';
-import { Protocol, Events } from '../core/message';
+import { Player } from './player';
+import { Game } from './game';
+import { Protocol, ServerEvents, ClientEvents } from '../core/message';
 
 export class App {
   io: IO;
   players: Player[] = [];
+  game: Game;
 
   constructor() {
     const io = (this.io = new IO());
 
+    this.game = new Game();
+
+    // handle protocol from client
     io.on(Protocol.UDPConnect, this.onUDPConnect);
     io.on(Protocol.UDPDisconnect, this.UDPDisconnect);
     io.on(Protocol.SocketConnect, this.onSocketConnect);
     io.on(Protocol.SocketDisconnect, this.onSocketDisconnect);
     io.on(Protocol.ClientConnected, this.onClientConnected);
 
-    io.on(Events.UDPPing, this.onUDPPing);
-    io.on(Events.SocketPing, this.onSocketPing);
+    // handle client events
+    io.on(ClientEvents.UDPPing, this.onUDPPing);
+    io.on(ClientEvents.SocketPing, this.onSocketPing);
+    io.on(ClientEvents.PlayerJoin, this.onPlayerJoin);
 
     io.listen();
   }
@@ -41,17 +48,26 @@ export class App {
 
   onClientConnected = (client: Client) => {
     debug('onClientConnected:', client.id);
-    client.messageUDP(Events.UDPInit);
-    client.messageSocket(Events.SocketInit);
+    client.messageUDP(ServerEvents.UDPInit);
+    client.messageSocket(ServerEvents.SocketInit);
   };
 
   onUDPPing = (client: Client) => {
     debug('onUDPPing:', client.id);
-    client.messageUDP(Events.UDPPong);
+    client.messageUDP(ServerEvents.UDPPong);
   };
 
   onSocketPing = (client: Client) => {
     debug('onSocketPing:', client.id);
-    client.messageSocket(Events.SocketPong);
+    client.messageSocket(ServerEvents.SocketPong);
+  };
+
+  onPlayerJoin = (client: Client, playerName: string) => {
+    const player = new Player(client, playerName);
+    this.game.addPlayer(player);
+    this.io.broadcastSocket(ServerEvents.PlayerJoined, {
+      clientId: client.id,
+      name: playerName,
+    });
   };
 }

@@ -1,14 +1,22 @@
 import { IO, Ping, startPing, endPing } from './io';
-import { Graphics } from './graphics';
+import { Graphics, PIXI } from './graphics';
 import { Grid } from '../../core/grid';
 import { GridView } from './gridView';
-import { Protocol, Message, Events } from '../../core/message';
-import { PlayerNameInput } from './playerNameInput';
+import {
+  Protocol,
+  Message,
+  ServerEvents,
+  ClientEvents,
+} from '../../core/message';
+import { PlayerNameInput } from './components/playerNameInput';
+import { PlayerJoinedNotice } from './components/playerJoinedNotice';
+import { Game } from './game';
+import { Player } from './player';
 
 export const GridDivisions = 10;
 export const GridSize = 500;
 export const GridMargin = 20;
-export const PingIntervalMs = 1000;
+export const PingIntervalMs = 10000;
 
 export class App {
   io: IO;
@@ -17,18 +25,22 @@ export class App {
   gridView: GridView;
   udpPing?: Ping;
   socketPing?: Ping;
+  game: Game;
 
   constructor() {
     const io = (this.io = new IO());
+
+    this.game = new Game();
 
     io.on(Protocol.Connected, this.onConnected);
     io.on(Protocol.UDPMessage, this.onUDPMessage);
     io.on(Protocol.SocketMessage, this.onSocketMessage);
 
-    io.on(Events.UDPInit, this.onUDPInit);
-    io.on(Events.SocketInit, this.onSocketInit);
-    io.on(Events.UDPPong, this.onUDPPong);
-    io.on(Events.SocketPong, this.onSocketPong);
+    io.on(ServerEvents.UDPInit, this.onUDPInit);
+    io.on(ServerEvents.SocketInit, this.onSocketInit);
+    io.on(ServerEvents.UDPPong, this.onUDPPong);
+    io.on(ServerEvents.SocketPong, this.onSocketPong);
+    io.on(ServerEvents.PlayerJoined, this.onPlayerJoined);
 
     const grid = (this.grid = new Grid(
       GridSize,
@@ -42,7 +54,7 @@ export class App {
 
     this.gridView = new GridView(grid, graphics, GridMargin);
 
-    new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
+    new PlayerNameInput().onDone(this.onPlayerNameSubmit);
   }
 
   onConnected = () => {
@@ -66,7 +78,7 @@ export class App {
 
   startUDPPing() {
     this.udpPing = startPing();
-    this.io.messageUDP(Events.UDPPing);
+    this.io.messageUDP(ClientEvents.UDPPing);
   }
 
   onSocketInit = () => {
@@ -76,7 +88,7 @@ export class App {
 
   startSocketPing() {
     this.socketPing = startPing();
-    this.io.messageSocket(Events.SocketPing);
+    this.io.messageSocket(ClientEvents.SocketPing);
   }
 
   onUDPPong = () => {
@@ -97,7 +109,23 @@ export class App {
     setTimeout(() => this.startSocketPing(), PingIntervalMs);
   };
 
-  onPlayerNameSubmit = (value: string) => {
-    alert(value);
+  onPlayerNameSubmit = (playerName: string) => {
+    this.io.messageSocket(ClientEvents.PlayerJoin, playerName);
+  };
+
+  onPlayerJoined = (info: { clientId: string; name: string }) => {
+    const { game, graphics } = this;
+    new PlayerJoinedNotice([this.graphics, info.name]).onDone(
+      (text: PIXI.Text) => {
+        const player = new Player(info.clientId);
+        game.addPlayer(player);
+        const [x, y] = player.initialPosition;
+        graphics
+          .ease(text, { x, y, width: 0, height: 0 }, 1000, 'easeOutBack', 1000)
+          .on('complete', () => {
+            graphics.removeObject(text);
+          });
+      },
+    );
   };
 }
