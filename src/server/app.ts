@@ -25,6 +25,7 @@ export class App {
     io.on(ClientEvents.UDPPing, this.onUDPPing);
     io.on(ClientEvents.SocketPing, this.onSocketPing);
     io.on(ClientEvents.PlayerJoin, this.onPlayerJoin);
+    io.on(ClientEvents.PlayerInput, this.onPlayerInput);
 
     io.listen();
   }
@@ -85,8 +86,13 @@ export class App {
         setTimeout(() => {
           io.broadcastSocket(ServerEvents.GameStart);
           game.start();
-        }, 4000);
+        }, 0); //4000
       }, 2000);
     }
+  };
+
+  onPlayerInput = (client: Client, code: string) => {
+    const player = this.game.getPlayer(client.id);
+    player.bufferInput(code);
   };
 }

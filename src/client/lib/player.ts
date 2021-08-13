@@ -1,9 +1,11 @@
 import { PlayerInfo } from '../../core';
 import { degToRad, Graphics, PIXI } from './graphics';
+import { IO } from './io';
 
 export type Edge = 'top' | 'left' | 'bottom' | 'right';
 
 export class Player {
+  io: IO;
   info: PlayerInfo;
   initialPosition: [number, number] = [-1, -1];
   graphics: Graphics;
@@ -11,7 +13,8 @@ export class Player {
   sprite: PIXI.Sprite;
   label: PIXI.Text;
 
-  constructor(info: PlayerInfo, graphics: Graphics) {
+  constructor(io: IO, info: PlayerInfo, graphics: Graphics) {
+    this.io = io;
     this.info = info;
     this.graphics = graphics;
     this.container = new PIXI.Container();
@@ -84,6 +87,12 @@ export class Player {
   //   } else if (edge === 'right') {
   //   }
   // }
+
+  gameInit() {}
+
+  dispose() {
+    this.graphics.removeObject(this.container);
+  }
 
   onUpdate = () => {
     this.sprite.rotation += degToRad(1);

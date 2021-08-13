@@ -43,12 +43,12 @@ export class App {
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
 
-    this.game = new Game(graphics, GridSize, GridDivisions, GridMargin);
+    this.game = new Game(io, graphics, GridSize, GridDivisions, GridMargin);
   }
 
   init() {
     this.graphics.preload().then(() => {
-      this.game.init();
+      this.game.initGridView();
       document.querySelector('#main header')!.classList.add('expanded');
       new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
     });
@@ -130,7 +130,7 @@ export class App {
   };
 
   onGameInit = () => {
-    this.game.showCountdown();
+    this.game.init();
   };
 
   onGameStart = () => {

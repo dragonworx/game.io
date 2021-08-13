@@ -33,8 +33,6 @@ export class GridView {
     const texture = graphics.textures.get('cell');
     grid.forEach((cell: Cell, h: number, v: number, x: number, y: number) => {
       const sprite = new PIXI.Sprite(texture);
-      sprite.anchor.x = 0.5;
-      sprite.anchor.y = 0.5;
       sprite.x = gridMargin + x + grid.cellWidth / 2;
       sprite.y = gridMargin + y + grid.cellHeight / 2;
       sprite.width = 0;

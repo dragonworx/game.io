@@ -24,6 +24,10 @@ export class Game {
     players.splice(index, 1);
   }
 
+  getPlayer(clientId: string) {
+    return this.players.find(player => player.client.id === clientId)!;
+  }
+
   init() {}
 
   start() {}

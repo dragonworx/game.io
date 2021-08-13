@@ -12,6 +12,8 @@ export class PlayerNameInput extends EventEmitter {
       input.value = name;
     }
 
+    setTimeout(() => this.emit('submit', input.value), 500);
+
     form.onsubmit = (e: Event) => {
       const value = input.value.trim();
       if (value.length) {

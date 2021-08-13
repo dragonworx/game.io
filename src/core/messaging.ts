@@ -25,6 +25,7 @@ export enum ClientEvents {
   UDPPing = 'udpPing',
   SocketPing = 'socketPing',
   PlayerJoin = 'playerJoin',
+  PlayerInput = 'playerInput',
 }
 
 // sent by server

@@ -2,22 +2,28 @@ import { GameStatus, PlayerInfo } from '../../core';
 import { Graphics } from './graphics';
 import { Player } from './player';
 import { Alert } from './components/alert';
+import { ClientEvents } from '../../core/messaging';
 import { Grid } from '../../core/grid';
 import { GridView } from './gridView';
+import { IO } from './io';
 
 export class Game {
+  io: IO;
   graphics: Graphics;
   players: Player[] = [];
   status: GameStatus = 'unconnected';
   grid: Grid;
   gridView: GridView;
+  userPlayer?: Player;
 
   constructor(
+    io: IO,
     graphics: Graphics,
     gridSize: number,
     gridDivisions: number,
     gridMargin: number,
   ) {
+    this.io = io;
     this.graphics = graphics;
     const grid = (this.grid = new Grid(
       gridSize,
@@ -29,7 +35,7 @@ export class Game {
     this.gridView = new GridView(grid, graphics, gridMargin);
   }
 
-  init() {
+  initGridView() {
     this.gridView.init();
     // for (let i = 1; i <= 10; i++) {
     //   this.newPlayer({
@@ -40,8 +46,8 @@ export class Game {
   }
 
   newPlayer(info: PlayerInfo) {
-    const { players, graphics } = this;
-    const player = new Player(info, graphics);
+    const { players, graphics, io } = this;
+    const player = new Player(io, info, graphics);
     players.push(player);
     graphics.addObject(player.container);
     this.distributePlayers();
@@ -49,8 +55,11 @@ export class Game {
   }
 
   joinPlayer(info: PlayerInfo) {
-    const { graphics } = this;
+    const { graphics, io } = this;
     const player = this.newPlayer(info);
+    if (info.clientId === io.clientId) {
+      this.userPlayer = player;
+    }
     const alert = new Alert(graphics, `"${info.name}" joined!`);
     alert.on('shown', () => {
       const [x, y] = player.initialPosition;
@@ -66,9 +75,11 @@ export class Game {
     );
     const player = players[index];
     players.splice(index, 1);
-    graphics.removeObject(player.container);
+    player.dispose();
     const alert = new Alert(graphics, `"${player.info.name}" disconnected!`);
-    alert.on('shown', () => alert.hide(graphics.center[0], -10));
+    alert.on('shown', () =>
+      alert.hide(graphics.center[0], this.gridView.gridMargin),
+    );
     alert.show();
   }
 
@@ -126,7 +137,51 @@ export class Game {
     alert.show();
   }
 
+  init() {
+    // this.showCountdown();
+    this.players.forEach(player => player.gameInit());
+  }
+
   start() {
     console.log('Game start');
+    if (this.userPlayer) {
+      this.bindInputEvents();
+    }
+  }
+
+  stop() {
+    console.log('Game stop');
+    if (this.userPlayer) {
+      this.unbindInputEvents();
+    }
+  }
+
+  bindInputEvents() {
+    window.addEventListener('keydown', this.onKeyDown);
+  }
+
+  unbindInputEvents() {
+    window.removeEventListener('keydown', this.onKeyDown);
+  }
+
+  onKeyDown = (e: KeyboardEvent) => {
+    const { code } = e;
+    const numericCode = this.getInputNumericCode(code);
+    if (numericCode !== -1) {
+      this.io.messageUDP(ClientEvents.PlayerInput, numericCode);
+    }
+  };
+
+  getInputNumericCode(code: string) {
+    if (code === 'ArrowLeft') {
+      return 0;
+    } else if (code === 'ArrowRight') {
+      return 1;
+    } else if (code === 'ArrowUp') {
+      return 2;
+    } else if (code === 'ArrowDown') {
+      return 3;
+    }
+    return -1;
   }
 }
