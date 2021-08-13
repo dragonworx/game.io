@@ -5,7 +5,12 @@ import geckos, {
   Data,
 } from '@geckos.io/server';
 import EventEmitter from 'eventemitter3';
-import { Message, Protocol, ServerEvents } from '../common/messaging';
+import {
+  ClientEvents,
+  Message,
+  Protocol,
+  ServerEvents,
+} from '../common/messaging';
 import { Client } from './client';
 import { debug, logger, stringify } from './log';
 import socketio from 'socket.io';
@@ -46,6 +51,7 @@ export class IO extends EventEmitter {
   }
 
   onUDPConnect = (channel: ServerChannel) => {
+    const { clients } = this;
     const { id } = channel;
     channel.on(Protocol.UDPRegister, (clientId: Data) => {
       debug('onUDPConnect.UDPRegister:', clientId, id);
@@ -53,49 +59,55 @@ export class IO extends EventEmitter {
     });
     channel.on(Protocol.UDPMessage, (data: Data) => {
       const message = data as Message<any>;
-      const { clientId, type, payload } = message;
-      debug(
-        'onUDPConnect.UDPMessage:',
-        clientId,
-        type,
-        JSON.stringify(payload),
-      );
+      const { clientId, eventName, payload } = message;
+      if (eventName !== ClientEvents.UDPPing) {
+        logger
+          .bold()
+          .color('magenta')
+          .log(`--------------\nUDP <- ${clientId}: "${eventName}"`);
+        payload && logger.color('magenta').log(stringify(payload));
+      }
       this.emit(Protocol.UDPMessage, message);
-      const client = this.clients.get(clientId)!;
-      this.emit(message.type, client, message.payload);
+      const client = clients.get(clientId)!;
+      this.emit(eventName, client, payload);
     });
     channel.onDisconnect = () => this.emit(Protocol.UDPDisconnect, id);
     this.emit(Protocol.UDPConnect, id);
   };
 
   onSocketConnect = (socket: Socket) => {
+    const { clients } = this;
     const { id } = socket;
     socket.on(Protocol.SocketRegister, (clientId: string) => {
       debug('onSocketConnect.SocketRegister:', clientId, id);
       this.registerClient(clientId, undefined, socket);
     });
     socket.on('disconnect', () => {
-      this.clients.forEach(client => {
+      clients.forEach(client => {
         if (client.socket!.id === id) {
-          debug('onSocketConnect.disconnect.deleted:' + client.id);
-          this.clients.delete(client.id);
+          logger
+            .bold()
+            .color('white')
+            .bgColor('red')
+            .log(`onSocketConnect.disconnect.deleteClient: ${client.id}`);
+          clients.delete(client.id);
           this.emit(Protocol.SocketDisconnect, client.id);
         }
       });
     });
     socket.on(Protocol.SocketMessage, (data: Message<any>) => {
       const message = data as Message<any>;
-      const { clientId, type, payload } = message;
-
-      logger
-        .bold()
-        .color('magenta')
-        .log(`--------------\nTCP <- ${clientId}: "${type}"`);
-      payload && logger.color('magenta').log(stringify(payload));
-
+      const { clientId, eventName, payload } = message;
+      if (eventName !== ClientEvents.SocketPing) {
+        logger
+          .bold()
+          .color('magenta')
+          .log(`--------------\nTCP <- ${clientId}: "${eventName}"`);
+        payload && logger.color('magenta').log(stringify(payload));
+      }
       this.emit(Protocol.SocketMessage, message);
-      const client = this.clients.get(clientId)!;
-      this.emit(message.type, client, message.payload);
+      const client = clients.get(clientId)!;
+      this.emit(eventName, client, payload);
     });
     this.emit(Protocol.SocketConnect, id);
   };

@@ -87,13 +87,17 @@ export class App {
   };
 
   onUDPMessage = <T>(message: Message<T>) => {
-    const { type, payload } = message;
-    console.debug('onUDPMessage:', type, payload);
+    const { eventName, payload } = message;
+    if (eventName !== ServerEvents.UDPPong) {
+      console.debug('onUDPMessage:', eventName, payload);
+    }
   };
 
   onSocketMessage = <T>(message: Message<T>) => {
-    const { type, payload } = message;
-    console.debug('onSocketMessage:', type, payload);
+    const { eventName, payload } = message;
+    if (eventName !== ServerEvents.SocketPong) {
+      console.debug('onSocketMessage:', eventName, payload);
+    }
   };
 
   onUDPInit = () => {
@@ -103,7 +107,7 @@ export class App {
 
   startUDPPing() {
     this.udpPing = startPing();
-    // this.io.messageUDP(ClientEvents.UDPPing);
+    this.io.messageUDP(ClientEvents.UDPPing);
   }
 
   onSocketInit = () => {
@@ -113,13 +117,12 @@ export class App {
 
   startSocketPing() {
     this.socketPing = startPing();
-    // this.io.messageSocket(ClientEvents.SocketPing);
+    this.io.messageSocket(ClientEvents.SocketPing);
   }
 
   onUDPPong = () => {
     endPing(this.udpPing!);
-    console.debug('onUDPPong:', this.udpPing!.elapsed);
-    document.getElementById('latency-udp span')!.innerText = String(
+    document.querySelector('#latency-udp span')!.innerHTML = String(
       this.udpPing!.elapsed,
     );
     setTimeout(() => this.startUDPPing(), PingIntervalMs);
@@ -127,8 +130,7 @@ export class App {
 
   onSocketPong = () => {
     endPing(this.socketPing!);
-    console.debug('onSocketPong:', this.socketPing!.elapsed);
-    document.getElementById('latency-socket span')!.innerText = String(
+    document.querySelector('#latency-socket span')!.innerHTML = String(
       this.socketPing!.elapsed,
     );
     setTimeout(() => this.startSocketPing(), PingIntervalMs);
@@ -156,7 +158,6 @@ export class App {
   };
 
   onPlayerInitialPositions = (playerPositionInfo: PlayerPositionInfo[]) => {
-    console.log('onPlayerInitialPositions', playerPositionInfo);
     this.game.updatePlayerInitialPositions(playerPositionInfo);
   };
 

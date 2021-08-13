@@ -53,7 +53,6 @@ export class Player {
     const { hasAddedToStage, graphics, container, game, position } = this;
     const { h, v, vectorX, vectorY } = info;
     if (!hasAddedToStage) {
-      console.log('adding to stage', this.info.name);
       graphics.addObject(container);
       this.hasAddedToStage = true;
     }
@@ -69,11 +68,9 @@ export class Player {
     position[1] = y;
     this.setLabelPosition();
     if (prevX === -1 && prevY === -1) {
-      console.log('first time', x, y);
       container.x = x;
       container.y = y;
     } else {
-      console.log('easing', x, y);
       graphics.ease(
         container,
         {
@@ -105,17 +102,6 @@ export class Player {
       label.x = -50;
     }
   }
-
-  // setMask(edge: Edge) {
-  //   const { mask } = this;
-  //   if (edge === 'top') {
-  //     mask.x = -30;
-  //     mask.y = 0;
-  //   } else if (edge === 'left') {
-  //   } else if (edge === 'bottom') {
-  //   } else if (edge === 'right') {
-  //   }
-  // }
 
   gameInit() {}
 

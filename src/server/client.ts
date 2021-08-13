@@ -1,5 +1,5 @@
 import { ServerChannel, Socket } from './io';
-import { Protocol, ServerEvents } from '../common/messaging';
+import { Message, Protocol, ServerEvents } from '../common/messaging';
 import { logger, stringify } from './log';
 
 export class Client {
@@ -12,28 +12,32 @@ export class Client {
   }
 
   messageUDP<T>(eventName: ServerEvents, payload?: T) {
-    logger
-      .bold()
-      .color('yellow')
-      .log(`--------------\nUDP -> ${this.id}: "${eventName}"`);
+    if (eventName !== ServerEvents.UDPPong) {
+      logger
+        .bold()
+        .color('yellow')
+        .log(`--------------\nUDP -> ${this.id}: "${eventName}"`);
+    }
     payload && logger.color('yellow').log(stringify(payload));
     this.udp!.emit(Protocol.UDPMessage, {
       clientId: this.id,
-      type: eventName,
+      eventName,
       payload,
-    });
+    } as Message<any>);
   }
 
   messageSocket<T>(eventName: ServerEvents, payload?: T) {
-    logger
-      .bold()
-      .color('yellow')
-      .log(`--------------\nTCP -> ${this.id}: "${eventName}"`);
+    if (eventName !== ServerEvents.SocketPong) {
+      logger
+        .bold()
+        .color('yellow')
+        .log(`--------------\nTCP -> ${this.id}: "${eventName}"`);
+    }
     payload && logger.color('yellow').log(stringify(payload));
     this.socket!.emit(Protocol.SocketMessage, {
       clientId: this.id,
-      type: eventName,
+      eventName,
       payload,
-    });
+    } as Message<any>);
   }
 }

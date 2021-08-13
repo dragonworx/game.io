@@ -25,6 +25,11 @@ export class Game {
     this.grid = new Grid(GridSize, GridDivisions, GridMargin);
   }
 
+  reset() {
+    this.status = 'pre';
+    this.players = [];
+  }
+
   logGameState() {
     logger.color('white').bgColor('blue').log(stringify(this.getGameState()));
   }

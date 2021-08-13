@@ -1,6 +1,6 @@
 export interface Message<T> {
   clientId: string;
-  type: string;
+  eventName: string;
   payload?: T;
 }
 

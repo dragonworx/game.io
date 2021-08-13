@@ -2,7 +2,7 @@ import geckos, { ClientChannel, Data } from '@geckos.io/client';
 import { EventEmitter } from 'eventemitter3';
 import io, { Socket } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
-import { Message, Protocol } from '../../common/messaging';
+import { ClientEvents, Message, Protocol } from '../../common/messaging';
 
 export class IO extends EventEmitter {
   clientId: string;
@@ -49,14 +49,16 @@ export class IO extends EventEmitter {
   onUDPMessage = (data: Data) => {
     const message = data as Message<any>;
     this.emit(Protocol.UDPMessage, message);
-    this.emit(message.type, message.payload);
+    this.emit(message.eventName, message.payload);
   };
 
-  messageUDP<T>(type: string, payload?: T) {
-    console.debug('messageUDP:', type, payload);
+  messageUDP<T>(eventName: string, payload?: T) {
+    if (eventName !== ClientEvents.UDPPing) {
+      console.debug('messageUDP:', eventName, payload);
+    }
     this.udp.emit(Protocol.UDPMessage, {
       clientId: this.clientId,
-      type,
+      eventName,
       payload,
     });
   }
@@ -79,14 +81,16 @@ export class IO extends EventEmitter {
   onSocketMessage = (data: Data) => {
     const message = data as Message<any>;
     this.emit(Protocol.SocketMessage, message);
-    this.emit(message.type, message.payload);
+    this.emit(message.eventName, message.payload);
   };
 
-  messageSocket<T>(type: string, payload?: T) {
-    console.debug('messageSocket:', type, payload);
+  messageSocket<T>(eventName: string, payload?: T) {
+    if (eventName !== ClientEvents.SocketPing) {
+      console.debug('messageSocket:', eventName, payload);
+    }
     this.socket.emit(Protocol.SocketMessage, {
       clientId: this.clientId,
-      type,
+      eventName,
       payload,
     });
   }

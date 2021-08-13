@@ -32,7 +32,7 @@ export class App {
     io.listen();
   }
 
-  onDebug = (client: Client, cmd: string) => {
+  onDebug = (_client: Client, cmd: string) => {
     if (cmd === 'clear') {
       console.clear();
     } else if (cmd === 'gameState') {
@@ -70,12 +70,10 @@ export class App {
   };
 
   onUDPPing = (client: Client) => {
-    debug('onUDPPing:', client.id);
     client.messageUDP(ServerEvents.UDPPong);
   };
 
   onSocketPing = (client: Client) => {
-    debug('onSocketPing:', client.id);
     client.messageSocket(ServerEvents.SocketPong);
   };
 
