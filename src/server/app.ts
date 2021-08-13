@@ -78,10 +78,14 @@ export class App {
       name: playerName,
     });
     const allPlayersJoined = io.clients.size === players.length;
-    console.log(io.clients.size, players.length);
     if (allPlayersJoined) {
       setTimeout(() => {
         io.broadcastSocket(ServerEvents.GameInit);
+        game.init();
+        setTimeout(() => {
+          io.broadcastSocket(ServerEvents.GameStart);
+          game.start();
+        }, 4000);
       }, 2000);
     }
   };

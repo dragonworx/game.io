@@ -37,4 +37,5 @@ export enum ServerEvents {
   PlayerJoined = 'playerJoined',
   PlayerDisconnected = 'playerDisconnected',
   GameInit = 'gameInit',
+  GameStart = 'gameStart',
 }

@@ -38,6 +38,7 @@ export class App {
     io.on(ServerEvents.PlayerJoined, this.onPlayerJoined);
     io.on(ServerEvents.PlayerDisconnected, this.onPlayerDisconnected);
     io.on(ServerEvents.GameInit, this.onGameInit);
+    io.on(ServerEvents.GameStart, this.onGameStart);
 
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
@@ -130,5 +131,9 @@ export class App {
 
   onGameInit = () => {
     this.game.showCountdown();
+  };
+
+  onGameStart = () => {
+    this.game.start();
   };
 }

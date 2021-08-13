@@ -125,4 +125,8 @@ export class Game {
     });
     alert.show();
   }
+
+  start() {
+    console.log('Game start');
+  }
 }

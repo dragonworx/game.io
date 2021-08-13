@@ -23,4 +23,8 @@ export class Game {
     const index = players.findIndex(player => player.client.id === clientId);
     players.splice(index, 1);
   }
+
+  init() {}
+
+  start() {}
 }
