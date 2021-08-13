@@ -9,6 +9,7 @@ export class Player {
   inputBuffer?: string;
   cell?: Cell;
   vector: Point = [0, 0];
+  offset: number = 0;
 
   constructor(client: Client, name: string) {
     this.client = client;
@@ -17,8 +18,8 @@ export class Player {
 
   get info(): PlayerInfo {
     return {
-      clientId: this.client.id,
-      name: this.name,
+      cid: this.client.id,
+      n: this.name,
     };
   }
 
@@ -35,4 +36,8 @@ export class Player {
   gameInit() {}
 
   gameStart() {}
+
+  update() {
+    this.offset += 1;
+  }
 }

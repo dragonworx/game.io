@@ -13,11 +13,18 @@ import {
   GridDivisions,
   GridMargin,
   GridSize,
-  InitGameState,
+  GameState,
   PingIntervalMs,
   PlayerInfo,
   PlayerPositionInfo,
 } from '../../common';
+
+const excludeLogUDPMessages: string[] = [
+  ServerEvents.UDPPong,
+  ServerEvents.UDPUpdate,
+];
+
+const excludeLogSocketMessages: string[] = [ServerEvents.SocketPong];
 
 export class App {
   io: IO;
@@ -36,15 +43,22 @@ export class App {
 
     io.on(ServerEvents.UDPInit, this.onUDPInit);
     io.on(ServerEvents.SocketInit, this.onSocketInit);
-    io.on(ServerEvents.InitConnection, this.onInitConnection);
+    io.on(ServerEvents.SocketInitConnection, this.onSocketInitConnection);
     io.on(ServerEvents.UDPPong, this.onUDPPong);
     io.on(ServerEvents.SocketPong, this.onSocketPong);
-    io.on(ServerEvents.PlayerJoined, this.onPlayerJoined);
-    io.on(ServerEvents.PlayerDisconnected, this.onPlayerDisconnected);
-    io.on(ServerEvents.PlayerInitialPositions, this.onPlayerInitialPositions);
-    io.on(ServerEvents.GameInit, this.onGameInit);
-    io.on(ServerEvents.GameStart, this.onGameStart);
-    io.on(ServerEvents.SetGameState, this.onSetGameState);
+    io.on(ServerEvents.SocketPlayerJoined, this.onSocketPlayerJoined);
+    io.on(
+      ServerEvents.SocketPlayerDisconnected,
+      this.onSocketPlayerDisconnected,
+    );
+    io.on(
+      ServerEvents.SocketPlayerInitialPositions,
+      this.onSocketPlayerInitialPositions,
+    );
+    io.on(ServerEvents.SocketGameInit, this.onSocketGameInit);
+    io.on(ServerEvents.SocketGameStart, this.onSocketGameStart);
+    io.on(ServerEvents.SocketRespondGameState, this.onSocketRespondGameState);
+    io.on(ServerEvents.UDPUpdate, this.onUDPUpdate);
 
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
@@ -61,7 +75,7 @@ export class App {
     )! as HTMLSelectElement;
     const button = debug.querySelector('button')! as HTMLButtonElement;
     button.onclick = () => {
-      this.io.messageSocket(ClientEvents.Debug, select.value);
+      this.io.messageSocket(ClientEvents.SocketDebug, select.value);
     };
   }
 
@@ -70,7 +84,7 @@ export class App {
       this.game.initGridView();
       document.querySelector('#main header')!.classList.add('expanded');
       new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
-      this.io.messageSocket(ClientEvents.GetGameState);
+      this.io.messageSocket(ClientEvents.SocketRequestGameState);
     });
   }
 
@@ -88,14 +102,14 @@ export class App {
 
   onUDPMessage = <T>(message: Message<T>) => {
     const { eventName, payload } = message;
-    if (eventName !== ServerEvents.UDPPong) {
+    if (!excludeLogUDPMessages.includes(eventName)) {
       console.debug('onUDPMessage:', eventName, payload);
     }
   };
 
   onSocketMessage = <T>(message: Message<T>) => {
     const { eventName, payload } = message;
-    if (eventName !== ServerEvents.SocketPong) {
+    if (!excludeLogSocketMessages.includes(eventName)) {
       console.debug('onSocketMessage:', eventName, payload);
     }
   };
@@ -136,7 +150,7 @@ export class App {
     setTimeout(() => this.startSocketPing(), PingIntervalMs);
   };
 
-  onInitConnection = (gameStatus: GameStatus) => {
+  onSocketInitConnection = (gameStatus: GameStatus) => {
     const { game } = this;
     game.status = gameStatus;
   };
@@ -146,33 +160,39 @@ export class App {
     const header = document.querySelector('#main header')!;
     header.classList.remove('expanded');
     header.classList.add('collapsed');
-    this.io.messageSocket(ClientEvents.PlayerJoin, playerName);
+    this.io.messageSocket(ClientEvents.SocketPlayerJoin, playerName);
   };
 
-  onPlayerJoined = (info: PlayerInfo) => {
+  onSocketPlayerJoined = (info: PlayerInfo) => {
     this.game.joinPlayer(info);
   };
 
-  onPlayerDisconnected = (clientId: string) => {
+  onSocketPlayerDisconnected = (clientId: string) => {
     this.game.removePlayer(clientId);
   };
 
-  onPlayerInitialPositions = (playerPositionInfo: PlayerPositionInfo[]) => {
+  onSocketPlayerInitialPositions = (
+    playerPositionInfo: PlayerPositionInfo[],
+  ) => {
     this.game.updatePlayerInitialPositions(playerPositionInfo);
   };
 
-  onGameInit = () => {
+  onSocketGameInit = () => {
     this.game.init();
   };
 
-  onGameStart = () => {
+  onSocketGameStart = () => {
     this.game.start();
   };
 
-  onSetGameState = (gameState: InitGameState) => {
-    gameState.players.forEach(info => {
+  onSocketRespondGameState = (gameState: GameState) => {
+    gameState.p.forEach(info => {
       const player = this.game.newPlayer(info);
       player.setInitialPosition(info);
     });
+  };
+
+  onUDPUpdate = (gameState: GameState) => {
+    this.game.updateFromState(gameState);
   };
 }

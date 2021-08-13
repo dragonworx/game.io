@@ -134,4 +134,16 @@ export class IO extends EventEmitter {
   broadcastUDP<T>(eventName: ServerEvents, payload?: T) {
     this.clients.forEach(client => client.messageUDP(eventName, payload));
   }
+
+  validateClients() {
+    const { clients } = this;
+    const invalidClients: Client[] = [];
+    clients.forEach(client => {
+      if (!client.isValid) {
+        invalidClients.push(client);
+        clients.delete(client.id);
+      }
+    });
+    return invalidClients;
+  }
 }

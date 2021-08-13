@@ -22,21 +22,23 @@ export class App {
     io.on(Protocol.ClientConnected, this.onClientConnected);
 
     // handle client events
-    io.on(ClientEvents.Debug, this.onDebug);
+    io.on(ClientEvents.SocketDebug, this.onSocketDebug);
     io.on(ClientEvents.UDPPing, this.onUDPPing);
     io.on(ClientEvents.SocketPing, this.onSocketPing);
-    io.on(ClientEvents.PlayerJoin, this.onPlayerJoin);
-    io.on(ClientEvents.PlayerInput, this.onPlayerInput);
-    io.on(ClientEvents.GetGameState, this.onGetGameState);
+    io.on(ClientEvents.SocketPlayerJoin, this.onSocketPlayerJoin);
+    io.on(ClientEvents.SocketPlayerInput, this.onSocketPlayerInput);
+    io.on(ClientEvents.SocketRequestGameState, this.onSocketRequestGameState);
 
     io.listen();
   }
 
-  onDebug = (_client: Client, cmd: string) => {
+  onSocketDebug = (_client: Client, cmd: string) => {
     if (cmd === 'clear') {
       console.clear();
     } else if (cmd === 'gameState') {
       this.game.logGameState();
+    } else if (cmd === 'reset') {
+      this.game.reset();
     }
   };
 
@@ -55,7 +57,7 @@ export class App {
   onSocketDisconnect = (clientId: string) => {
     debug('onSocketDisconnect.Client:', clientId);
     this.game.removePlayer(clientId);
-    this.io.broadcastSocket(ServerEvents.PlayerDisconnected, clientId);
+    this.io.broadcastSocket(ServerEvents.SocketPlayerDisconnected, clientId);
   };
 
   onClientConnected = (client: Client) => {
@@ -66,7 +68,7 @@ export class App {
     this.game.logGameState();
     client.messageUDP(ServerEvents.UDPInit);
     client.messageSocket(ServerEvents.SocketInit);
-    client.messageSocket(ServerEvents.InitConnection, this.game.status);
+    client.messageSocket(ServerEvents.SocketInitConnection, this.game.status);
   };
 
   onUDPPing = (client: Client) => {
@@ -77,17 +79,20 @@ export class App {
     client.messageSocket(ServerEvents.SocketPong);
   };
 
-  onPlayerJoin = (client: Client, playerName: string) => {
+  onSocketPlayerJoin = (client: Client, playerName: string) => {
     logger.color('white').bgColor('cyan').log(`onPlayerJoin: ${client.id}`);
     this.game.newPlayer(client, playerName);
     this.game.logGameState();
   };
 
-  onPlayerInput = (client: Client, code: string) => {
+  onSocketPlayerInput = (client: Client, code: string) => {
     this.game.getPlayer(client.id).bufferInput(code);
   };
 
-  onGetGameState = (client: Client) => {
-    client.messageSocket(ServerEvents.SetGameState, this.game.getGameState());
+  onSocketRequestGameState = (client: Client) => {
+    client.messageSocket(
+      ServerEvents.SocketRespondGameState,
+      this.game.getGameState(),
+    );
   };
 }

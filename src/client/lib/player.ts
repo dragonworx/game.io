@@ -27,7 +27,7 @@ export class Player {
     this.container = new PIXI.Container();
     const container = new PIXI.Container();
     this.container.addChild(container);
-    const label = (this.label = new PIXI.Text(info.name, {
+    const label = (this.label = new PIXI.Text(info.n, {
       fontFamily: 'Orbitron',
       fontSize: 14,
       fill: '#ffffff',
@@ -51,22 +51,24 @@ export class Player {
 
   setInitialPosition(info: PlayerPositionInfo) {
     const { hasAddedToStage, graphics, container, game, position } = this;
-    const { h, v, vectorX, vectorY } = info;
+    const [prevX, prevY] = position;
+    const { h, v, vx, vy } = info;
+    const cell = (this.cell = game.grid.getCell(h, v));
+    const { bounds } = cell;
+    this.vector[0] = vx;
+    this.vector[1] = vy;
+    const x = bounds.centerX;
+    const y = bounds.centerY;
+    position[0] = x;
+    position[1] = y;
+
+    this.setLabelPosition();
+
     if (!hasAddedToStage) {
       graphics.addObject(container);
       this.hasAddedToStage = true;
     }
-    const cell = (this.cell = game.grid.getCell(h, v));
-    const { bounds } = cell;
-    this.vector[0] = vectorX;
-    this.vector[1] = vectorY;
-    const x = bounds.centerX;
-    const y = bounds.centerY;
 
-    const [prevX, prevY] = position;
-    position[0] = x;
-    position[1] = y;
-    this.setLabelPosition();
     if (prevX === -1 && prevY === -1) {
       container.x = x;
       container.y = y;
@@ -81,6 +83,21 @@ export class Player {
         'easeOutBack',
       );
     }
+  }
+
+  updateFromState(info: PlayerPositionInfo) {
+    const { container, game, position } = this;
+    const { h, v, vx, vy, o } = info;
+    const cell = (this.cell = game.grid.getCell(h, v));
+    const { bounds } = cell;
+    this.vector[0] = vx;
+    this.vector[1] = vy;
+    let x = bounds.centerX;
+    let y = bounds.centerY;
+    if (vy === 1) y += o;
+    container.x = position[0] = x;
+    container.y = position[1] = y;
+    this.setLabelPosition();
   }
 
   setLabelPosition() {

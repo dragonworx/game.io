@@ -1,6 +1,6 @@
-import { fatalExit, logger, stringify } from './log';
+import { logger, stringify } from './log';
 import {
-  InitGameState,
+  GameState,
   GameStatus,
   GridSize,
   GridDivisions,
@@ -17,17 +17,22 @@ import { Player } from './player';
 export class Game {
   io: IO;
   players: Player[] = [];
-  status: GameStatus = 'pre';
+  status: GameStatus = GameStatus.Pre;
   grid: Grid;
+  fpsInterval: number;
+  timer?: number;
 
   constructor(io: IO) {
     this.io = io;
     this.grid = new Grid(GridSize, GridDivisions, GridMargin);
+    this.fpsInterval = Math.round(1000 / FPS);
   }
 
   reset() {
-    this.status = 'pre';
+    this.status = GameStatus.Pre;
     this.players = [];
+    clearInterval(this.timer);
+    delete this.timer;
   }
 
   logGameState() {
@@ -38,10 +43,13 @@ export class Game {
     const { io, players } = this;
     const player = new Player(client, playerName);
     this.players.push(player);
-    io.broadcastSocket(ServerEvents.PlayerJoined, player.info);
+    io.broadcastSocket(ServerEvents.SocketPlayerJoined, player.info);
 
     const playerPositionInfo = this.distributePlayers();
-    io.broadcastSocket(ServerEvents.PlayerInitialPositions, playerPositionInfo);
+    io.broadcastSocket(
+      ServerEvents.SocketPlayerInitialPositions,
+      playerPositionInfo,
+    );
 
     const allPlayersJoined = io.clients.size === players.length;
     if (allPlayersJoined) {
@@ -98,15 +106,16 @@ export class Game {
       ...player.info,
       h: player.cell!.h,
       v: player.cell!.v,
-      vectorX: player.vector[0],
-      vectorY: player.vector[1],
+      vx: player.vector[0],
+      vy: player.vector[1],
+      o: player.offset,
     }));
   }
 
-  getGameState(): InitGameState {
+  getGameState(): GameState {
     return {
-      status: this.status,
-      players: this.getPlayerPositionInfo(),
+      s: this.status,
+      p: this.getPlayerPositionInfo(),
     };
   }
 
@@ -133,13 +142,20 @@ export class Game {
   init() {
     const { io } = this;
     this.players.forEach(player => player.gameInit());
-    io.broadcastSocket(ServerEvents.GameInit);
+    io.broadcastSocket(ServerEvents.SocketGameInit);
   }
 
   start() {
     const { players, io } = this;
-    this.status = 'running';
+    this.status = GameStatus.Running;
     players.forEach(player => player.gameStart());
-    io.broadcastSocket(ServerEvents.GameStart);
+    io.broadcastSocket(ServerEvents.SocketGameStart);
+    this.timer = setInterval(this.tick, this.fpsInterval);
   }
+
+  tick = (_time: number) => {
+    const { players, io } = this;
+    players.forEach(player => player.update());
+    io.broadcastUDP(ServerEvents.UDPUpdate, this.getGameState());
+  };
 }

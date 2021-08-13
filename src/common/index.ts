@@ -1,20 +1,26 @@
 export interface PlayerInfo {
-  clientId: string;
-  name: string;
+  cid: string;
+  n: string;
 }
 
-export type GameStatus = 'unconnected' | 'pre' | 'running' | 'over';
+export enum GameStatus {
+  Unconnected = 0,
+  Pre = 1,
+  Running = 2,
+  Over = 3,
+}
 
-export interface InitGameState {
-  status: GameStatus;
-  players: PlayerPositionInfo[];
+export interface GameState {
+  s: GameStatus;
+  p: PlayerPositionInfo[];
 }
 
 export interface PlayerPositionInfo extends PlayerInfo {
   h: number;
   v: number;
-  vectorX: number;
-  vectorY: number;
+  vx: number;
+  vy: number;
+  o: number;
 }
 
 export const GridDivisions = 20; // odd numbers work best for initial distribution of players

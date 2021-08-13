@@ -1,4 +1,9 @@
-import { GameStatus, PlayerInfo, PlayerPositionInfo } from '../../common';
+import {
+  GameState,
+  GameStatus,
+  PlayerInfo,
+  PlayerPositionInfo,
+} from '../../common';
 import { Graphics } from './graphics';
 import { Player } from './player';
 import { Alert } from './components/alert';
@@ -11,7 +16,7 @@ export class Game {
   io: IO;
   graphics: Graphics;
   players: Player[] = [];
-  status: GameStatus = 'unconnected';
+  status: GameStatus = GameStatus.Unconnected;
   grid: Grid;
   gridView: GridView;
   userPlayer?: Player;
@@ -31,7 +36,7 @@ export class Game {
   }
 
   getPlayer(clientId: string) {
-    return this.players.find(player => player.info.clientId === clientId)!;
+    return this.players.find(player => player.info.cid === clientId)!;
   }
 
   newPlayer(playerInfo: PlayerInfo) {
@@ -44,10 +49,10 @@ export class Game {
   joinPlayer(info: PlayerInfo) {
     const { graphics, io } = this;
     const player = this.newPlayer(info);
-    if (info.clientId === io.clientId) {
+    if (info.cid === io.clientId) {
       this.userPlayer = player;
     }
-    const alert = new Alert(graphics, `"${info.name}" joined!`);
+    const alert = new Alert(graphics, `"${info.n}" joined!`);
     alert.on('shown', () => {
       const [x, y] = player.position;
       alert.hide(x, y);
@@ -57,14 +62,12 @@ export class Game {
 
   removePlayer(clientId: string) {
     const { players, graphics } = this;
-    const index = players.findIndex(
-      player => player.info.clientId === clientId,
-    );
+    const index = players.findIndex(player => player.info.cid === clientId);
     if (index > -1) {
       const player = players[index];
       players.splice(index, 1);
       player.dispose();
-      const alert = new Alert(graphics, `"${player.info.name}" disconnected!`);
+      const alert = new Alert(graphics, `"${player.info.n}" disconnected!`);
       alert.on('shown', () => alert.hide(graphics.center[0], this.grid.margin));
       alert.show();
     }
@@ -76,7 +79,7 @@ export class Game {
 
   updatePlayerInitialPositions(playerPositionInfo: PlayerPositionInfo[]) {
     playerPositionInfo.forEach(info => {
-      const player = this.getPlayer(info.clientId);
+      const player = this.getPlayer(info.cid);
       player.setInitialPosition(info);
     });
   }
@@ -131,7 +134,7 @@ export class Game {
     const { code } = e;
     const numericCode = this.getInputNumericCode(code);
     if (numericCode !== -1) {
-      this.io.messageUDP(ClientEvents.PlayerInput, numericCode);
+      this.io.messageUDP(ClientEvents.SocketPlayerInput, numericCode);
     }
   };
 
@@ -148,5 +151,13 @@ export class Game {
       return 4;
     }
     return -1;
+  }
+
+  updateFromState(gameState: GameState) {
+    this.status = gameState.s;
+    gameState.p.forEach(info => {
+      const player = this.getPlayer(info.cid);
+      player.updateFromState(info);
+    });
   }
 }
