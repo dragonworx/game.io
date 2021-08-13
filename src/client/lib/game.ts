@@ -1,9 +1,9 @@
-import { GameStatus, PlayerInfo } from '../../core';
+import { GameStatus, PlayerInfo } from '../../common';
 import { Graphics } from './graphics';
 import { Player } from './player';
 import { Alert } from './components/alert';
-import { ClientEvents } from '../../core/messaging';
-import { Grid } from '../../core/grid';
+import { ClientEvents } from '../../common/messaging';
+import { Grid } from '../../common/grid';
 import { GridView } from './gridView';
 import { IO } from './io';
 
@@ -68,16 +68,9 @@ export class Game {
 
   initGridView() {
     this.gridView.init();
-    for (let i = 1; i <= 15; i++) {
-      this.newPlayer({
-        clientId: `id${i}`,
-        name: `Player ${i}`,
-      });
-    }
   }
 
   distributePlayers() {
-    console.log('---------------------------');
     const { players, grid } = this;
     const { divisions } = grid;
     const top: Player[] = [];
@@ -184,6 +177,8 @@ export class Game {
       return 2;
     } else if (code === 'ArrowDown') {
       return 3;
+    } else if (code === 'Space') {
+      return 4;
     }
     return -1;
   }

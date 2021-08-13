@@ -15,7 +15,6 @@ export class Grid {
     const cellSize = (this.cellSize = Math.round(size / divisions));
     this.outerBounds = new Bounds(0, 0, size + margin * 2, size + margin * 2);
     this.innerBounds = new Bounds(margin, margin, size, size);
-
     const cellMap = (this.cellMap = new Map());
     const cells: Cell[][] = (this.cells = []);
     for (let v = 1; v <= divisions; v++) {

@@ -1,5 +1,5 @@
 import { ServerChannel, Socket } from './io';
-import { Protocol, ServerEvents } from '../core/messaging';
+import { Protocol, ServerEvents } from '../common/messaging';
 import { debug } from './log';
 
 export class Client {

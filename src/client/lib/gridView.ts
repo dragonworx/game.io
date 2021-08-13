@@ -1,8 +1,7 @@
-import { Grid, Cell } from '../../core/grid';
+import { Grid, Cell } from '../../common/grid';
 import { Graphics, PIXI } from './graphics';
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
-const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const IntroAnimationDurationMs = 5000;
 

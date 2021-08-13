@@ -3,7 +3,7 @@ import { Client } from './client';
 import { debug } from './log';
 import { Player } from './player';
 import { Game } from './game';
-import { Protocol, ServerEvents, ClientEvents } from '../core/messaging';
+import { Protocol, ServerEvents, ClientEvents } from '../common/messaging';
 
 export class App {
   io: IO;
@@ -12,7 +12,7 @@ export class App {
   constructor() {
     const io = (this.io = new IO());
 
-    this.game = new Game();
+    this.game = new Game(io);
 
     // handle protocol from client
     io.on(Protocol.UDPConnect, this.onUDPConnect);
@@ -49,6 +49,8 @@ export class App {
   };
 
   onClientConnected = (client: Client) => {
+    this.game.clear();
+
     debug('onClientConnected:', client.id);
     client.messageUDP(ServerEvents.UDPInit);
     client.messageSocket(ServerEvents.SocketInit);
@@ -57,6 +59,10 @@ export class App {
       ServerEvents.InitConnection,
       this.game.getInitGameState(),
     );
+
+    for (let i = 0; i < 3; i++) {
+      this.game.newPlayer(client, `Player${i + 1}`);
+    }
   };
 
   onUDPPing = (client: Client) => {
@@ -70,29 +76,10 @@ export class App {
   };
 
   onPlayerJoin = (client: Client, playerName: string) => {
-    const { game, io } = this;
-    const { players } = game;
-    const player = new Player(client, playerName);
-    game.addPlayer(player);
-    io.broadcastSocket(ServerEvents.PlayerJoined, {
-      clientId: client.id,
-      name: playerName,
-    });
-    const allPlayersJoined = io.clients.size === players.length;
-    if (allPlayersJoined) {
-      setTimeout(() => {
-        io.broadcastSocket(ServerEvents.GameInit);
-        game.init();
-        setTimeout(() => {
-          io.broadcastSocket(ServerEvents.GameStart);
-          game.start();
-        }, 0); //4000
-      }, 2000);
-    }
+    this.game.newPlayer(client, playerName);
   };
 
   onPlayerInput = (client: Client, code: string) => {
-    const player = this.game.getPlayer(client.id);
-    player.bufferInput(code);
+    this.game.getPlayer(client.id).bufferInput(code);
   };
 }

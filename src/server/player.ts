@@ -1,4 +1,5 @@
-import { PlayerInfo } from '../core';
+import { PlayerInfo } from '../common';
+import { Point } from '../common/grid';
 import { Client } from './client';
 import { info } from './log';
 
@@ -6,6 +7,7 @@ export class Player {
   client: Client;
   name: string;
   inputBuffer?: string;
+  vector: Point = [0, 0];
 
   constructor(client: Client, name: string) {
     this.client = client;
@@ -23,4 +25,8 @@ export class Player {
     info(`Player[${this.client.id}].Input:`, code);
     this.inputBuffer = code;
   }
+
+  gameInit() {}
+
+  gameStart() {}
 }

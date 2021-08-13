@@ -5,20 +5,22 @@ import {
   Message,
   ServerEvents,
   ClientEvents,
-} from '../../core/messaging';
+} from '../../common/messaging';
 import { PlayerNameInput } from './components/playerNameInput';
 import { Game } from './game';
-import { InitGameState, PlayerInfo } from '../../core';
-
-export const GridDivisions = 20; // odd numbers work best for initial distribution of players
-export const GridSize = 750;
-export const GridMargin = 20;
-export const PingIntervalMs = 10000;
+import {
+  GridDivisions,
+  GridMargin,
+  GridSize,
+  InitGameState,
+  PingIntervalMs,
+  PlayerInfo,
+} from '../../common';
 
 export class App {
   io: IO;
   graphics: Graphics;
-
+  hasConnected: boolean = false;
   udpPing?: Ping;
   socketPing?: Ping;
   game: Game;
@@ -56,7 +58,12 @@ export class App {
 
   onConnected = () => {
     console.debug('onConnected:', this.io.clientId);
+    if (this.hasConnected) {
+      window.location.reload();
+      return;
+    }
     this.init();
+    this.hasConnected = true;
   };
 
   onUDPMessage = <T>(message: Message<T>) => {

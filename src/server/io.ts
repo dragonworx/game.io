@@ -5,7 +5,7 @@ import geckos, {
   Data,
 } from '@geckos.io/server';
 import EventEmitter from 'eventemitter3';
-import { Message, Protocol, ServerEvents } from '../core/messaging';
+import { Message, Protocol, ServerEvents } from '../common/messaging';
 import { Client } from './client';
 import { debug } from './log';
 import socketio from 'socket.io';

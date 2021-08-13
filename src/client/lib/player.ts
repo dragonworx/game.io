@@ -1,5 +1,5 @@
-import { PlayerInfo } from '../../core';
-import { Point } from '../../core/grid';
+import { PlayerInfo } from '../../common';
+import { Point } from '../../common/grid';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { IO } from './io';
 
