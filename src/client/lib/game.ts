@@ -25,24 +25,9 @@ export class Game {
   ) {
     this.io = io;
     this.graphics = graphics;
-    const grid = (this.grid = new Grid(
-      gridSize,
-      gridSize,
-      gridDivisions,
-      gridDivisions,
-    ));
+    const grid = (this.grid = new Grid(gridSize, gridDivisions, gridMargin));
 
-    this.gridView = new GridView(grid, graphics, gridMargin);
-  }
-
-  initGridView() {
-    this.gridView.init();
-    // for (let i = 1; i <= 10; i++) {
-    //   this.newPlayer({
-    //     clientId: `id${i}`,
-    //     name: `Player ${i}`,
-    //   });
-    // }
+    this.gridView = new GridView(grid, graphics);
   }
 
   newPlayer(info: PlayerInfo) {
@@ -77,14 +62,24 @@ export class Game {
     players.splice(index, 1);
     player.dispose();
     const alert = new Alert(graphics, `"${player.info.name}" disconnected!`);
-    alert.on('shown', () =>
-      alert.hide(graphics.center[0], this.gridView.gridMargin),
-    );
+    alert.on('shown', () => alert.hide(graphics.center[0], this.grid.margin));
     alert.show();
   }
 
+  initGridView() {
+    this.gridView.init();
+    for (let i = 1; i <= 15; i++) {
+      this.newPlayer({
+        clientId: `id${i}`,
+        name: `Player ${i}`,
+      });
+    }
+  }
+
   distributePlayers() {
-    const { players, grid, gridView } = this;
+    console.log('---------------------------');
+    const { players, grid } = this;
+    const { divisions } = grid;
     const top: Player[] = [];
     const left: Player[] = [];
     const bottom: Player[] = [];
@@ -96,30 +91,38 @@ export class Game {
       edge.push(player);
       index = (index + 1) % 4;
     });
-    const topInc = Math.round(grid.hDivisions / (top.length + 1));
-    const leftInc = Math.round(grid.vDivisions / (left.length + 1));
-    const bottomInc = Math.round(grid.hDivisions / (bottom.length + 1));
-    const rightInc = Math.round(grid.vDivisions / (right.length + 1));
+    const topInc = Math.round(divisions / (top.length + 1));
+    const leftInc = Math.round(divisions / (left.length + 1));
+    const bottomInc = Math.round(divisions / (bottom.length + 1));
+    const rightInc = Math.round(divisions / (right.length + 1));
+    const topOffset = top.length === 4 ? 1 : 0;
+    const leftOffset = left.length === 5 ? 1 : 0;
+    const bottomOffset = bottom.length === 4 ? 1 : 0;
+    const rightOffset = right.length === 5 ? 1 : 0;
     top.forEach((player, i) => {
-      const [x, y] = gridView.getPosition(topInc * (i + 1), 0);
-      player.setInitialPosition(x, y, 'top');
+      const h = topInc * (i + 1) + topOffset;
+      const bounds = grid.getCell(h, 1).bounds;
+      player.setInitialPosition(bounds.centerX, bounds.top, 'top');
     });
     left.forEach((player, i) => {
-      const [x, y] = gridView.getPosition(0, leftInc * (i + 1));
-      player.setInitialPosition(x, y, 'left');
+      const v = leftInc * (i + 1) + leftOffset;
+      const bounds = grid.getCell(1, v).bounds;
+      player.setInitialPosition(bounds.left, bounds.centerY, 'left');
     });
     bottom.forEach((player, i) => {
-      const [x, y] = gridView.getPosition(bottomInc * (i + 1), grid.vDivisions);
-      player.setInitialPosition(x, y, 'bottom');
+      const h = bottomInc * (i + 1) + bottomOffset;
+      const bounds = grid.getCell(h, divisions).bounds;
+      player.setInitialPosition(bounds.centerX, bounds.bottom, 'bottom');
     });
     right.forEach((player, i) => {
-      const [x, y] = gridView.getPosition(grid.hDivisions, rightInc * (i + 1));
-      player.setInitialPosition(x, y, 'right');
+      const v = rightInc * (i + 1) + rightOffset;
+      const bounds = grid.getCell(divisions, v).bounds;
+      player.setInitialPosition(bounds.right, bounds.centerY, 'right');
     });
   }
 
   showCountdown() {
-    const { graphics, gridView } = this;
+    const { graphics, grid } = this;
     const alert = new Alert(graphics, `Get ready in 3...`);
     alert.on('shown', () => {
       setTimeout(() => {
@@ -128,7 +131,7 @@ export class Game {
           alert.text.text = `Get ready in 1...`;
           setTimeout(() => {
             alert.text.text = `Go!`;
-            const [x, y] = gridView.center;
+            const [x, y] = grid.innerBounds.center;
             alert.hide(x, y);
           }, 1000);
         }, 1000);

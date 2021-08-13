@@ -10,8 +10,8 @@ import { PlayerNameInput } from './components/playerNameInput';
 import { Game } from './game';
 import { InitGameState, PlayerInfo } from '../../core';
 
-export const GridDivisions = 21;
-export const GridSize = 500;
+export const GridDivisions = 20; // odd numbers work best for initial distribution of players
+export const GridSize = 750;
 export const GridMargin = 20;
 export const PingIntervalMs = 10000;
 

@@ -1,5 +1,4 @@
-import { Cell } from '../../core/cell';
-import { Grid } from '../../core/grid';
+import { Grid, Cell } from '../../core/grid';
 import { Graphics, PIXI } from './graphics';
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
@@ -10,31 +9,25 @@ const IntroAnimationDurationMs = 5000;
 export class GridView {
   grid: Grid;
   graphics: Graphics;
-  gridMargin: number;
   cellSpriteMap: Map<Cell, PIXI.Sprite>;
 
-  constructor(grid: Grid, graphics: Graphics, gridMargin: number) {
+  constructor(grid: Grid, graphics: Graphics) {
     this.grid = grid;
     this.graphics = graphics;
-    this.gridMargin = gridMargin;
 
     this.cellSpriteMap = new Map();
   }
 
-  get center(): [number, number] {
-    return [
-      this.gridMargin + this.grid.width / 2,
-      this.gridMargin + this.grid.height / 2,
-    ];
-  }
-
   init() {
-    const { grid, gridMargin, graphics, cellSpriteMap } = this;
+    const { grid, graphics, cellSpriteMap } = this;
+    const { cellSize } = grid;
     const texture = graphics.textures.get('cell');
-    grid.forEach((cell: Cell, h: number, v: number, x: number, y: number) => {
+    grid.forEach((cell: Cell) => {
+      const { h, v } = cell;
       const sprite = new PIXI.Sprite(texture);
-      sprite.x = gridMargin + x + grid.cellWidth / 2;
-      sprite.y = gridMargin + y + grid.cellHeight / 2;
+      const [x, y] = grid.getCell(h, v).position;
+      sprite.x = x;
+      sprite.y = y;
       sprite.width = 0;
       sprite.height = 0;
       sprite.alpha = 0;
@@ -44,23 +37,17 @@ export class GridView {
         .ease(
           sprite,
           {
-            width: grid.cellWidth,
-            height: grid.cellHeight,
+            width: cellSize,
+            height: cellSize,
             alpha: 1,
           },
           Math.round(Math.random() * IntroAnimationDurationMs),
           'easeOutBack',
         )
         .on('complete', () => {
-          (sprite.width = grid.cellWidth), (sprite.height = grid.cellHeight);
+          (sprite.width = cellSize), (sprite.height = cellSize);
           sprite.alpha = 1;
         });
     });
-  }
-
-  getPosition(h: number, v: number): [number, number] {
-    const { gridMargin, grid } = this;
-    const { cellWidth, cellHeight } = grid;
-    return [gridMargin + cellWidth * h, gridMargin + cellHeight * v];
   }
 }
