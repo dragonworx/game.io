@@ -1,20 +1,26 @@
-import { PlayerInfo } from '../../common';
-import { Point } from '../../common/grid';
+import { PlayerInfo, PlayerPositionInfo } from '../../common';
+import { Cell, Point } from '../../common/grid';
+import { Game } from './game';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { IO } from './io';
 
 export type Edge = 'top' | 'left' | 'bottom' | 'right';
 
 export class Player {
+  game: Game;
   io: IO;
   info: PlayerInfo;
-  initialPosition: Point = [-1, -1];
   graphics: Graphics;
   container: PIXI.Container;
   sprite: PIXI.Sprite;
   label: PIXI.Text;
+  hasAddedToStage: boolean = false;
+  position: Point = [-1, -1];
+  cell?: Cell;
+  vector: Point = [0, 0];
 
-  constructor(io: IO, info: PlayerInfo, graphics: Graphics) {
+  constructor(game: Game, io: IO, info: PlayerInfo, graphics: Graphics) {
+    this.game = game;
     this.io = io;
     this.info = info;
     this.graphics = graphics;
@@ -43,16 +49,31 @@ export class Player {
     graphics.addTicker(this.onUpdate);
   }
 
-  setInitialPosition(x: number, y: number, edge: Edge) {
-    const { initialPosition, container, graphics } = this;
-    const [prevX, prevY] = initialPosition;
-    initialPosition[0] = x;
-    initialPosition[1] = y;
-    this.setLabelPosition(edge);
+  setInitialPosition(info: PlayerPositionInfo) {
+    const { hasAddedToStage, graphics, container, game, position } = this;
+    const { h, v, vectorX, vectorY } = info;
+    if (!hasAddedToStage) {
+      console.log('adding to stage', this.info.name);
+      graphics.addObject(container);
+      this.hasAddedToStage = true;
+    }
+    const cell = (this.cell = game.grid.getCell(h, v));
+    const { bounds } = cell;
+    this.vector[0] = vectorX;
+    this.vector[1] = vectorY;
+    const x = bounds.centerX;
+    const y = bounds.centerY;
+
+    const [prevX, prevY] = position;
+    position[0] = x;
+    position[1] = y;
+    this.setLabelPosition();
     if (prevX === -1 && prevY === -1) {
+      console.log('first time', x, y);
       container.x = x;
       container.y = y;
     } else {
+      console.log('easing', x, y);
       graphics.ease(
         container,
         {
@@ -65,15 +86,22 @@ export class Player {
     }
   }
 
-  setLabelPosition(edge: Edge) {
-    const { label } = this;
-    if (edge === 'top') {
+  setLabelPosition() {
+    const {
+      vector: [vectorX, vectorY],
+      label,
+    } = this;
+    if (vectorY === 1) {
+      //top
       label.y = 25;
-    } else if (edge === 'left') {
+    } else if (vectorX === 1) {
+      //left
       label.x = 50;
-    } else if (edge === 'bottom') {
+    } else if (vectorY === -1) {
+      //bottom
       label.y = -30;
-    } else if (edge === 'right') {
+    } else if (vectorX === -1) {
+      //right
       label.x = -50;
     }
   }

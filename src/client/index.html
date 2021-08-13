@@ -21,10 +21,17 @@
           ><input type="submit" value="Ready!" />
         </form>
       </header>
-      <ul id="latency">
-        <li>udp: <span id="latency-udp"></span></li>
-        <li>tcp: <span id="latency-socket"></span></li>
-      </ul>
+      <div id="info">
+        <div id="latency-udp">udp: <span></span></div>
+        <div id="latency-socket">tcp: <span></span></div>
+        <div id="clientId"><span></span></div>
+        <div id="debug">
+          <select>
+            <option>clear</option>
+            <option>gameState</option></select
+          ><button>Debug</button>
+        </div>
+      </div>
       <div id="canvas"></div>
     </div>
   </body>

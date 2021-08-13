@@ -7,7 +7,7 @@ import geckos, {
 import EventEmitter from 'eventemitter3';
 import { Message, Protocol, ServerEvents } from '../common/messaging';
 import { Client } from './client';
-import { debug } from './log';
+import { debug, logger, stringify } from './log';
 import socketio from 'socket.io';
 
 export { ServerChannel } from '@geckos.io/server';
@@ -86,12 +86,13 @@ export class IO extends EventEmitter {
     socket.on(Protocol.SocketMessage, (data: Message<any>) => {
       const message = data as Message<any>;
       const { clientId, type, payload } = message;
-      debug(
-        'onSocketConnect.SocketMessage:',
-        clientId,
-        type,
-        JSON.stringify(payload),
-      );
+
+      logger
+        .bold()
+        .color('magenta')
+        .log(`--------------\nTCP <- ${clientId}: "${type}"`);
+      payload && logger.color('magenta').log(stringify(payload));
+
       this.emit(Protocol.SocketMessage, message);
       const client = this.clients.get(clientId)!;
       this.emit(message.type, client, message.payload);

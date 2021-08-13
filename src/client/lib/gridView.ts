@@ -3,7 +3,7 @@ import { Graphics, PIXI } from './graphics';
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
 
-const IntroAnimationDurationMs = 5000;
+const IntroAnimationDurationMs = 3000;
 
 export class GridView {
   grid: Grid;
@@ -41,7 +41,7 @@ export class GridView {
             alpha: 1,
           },
           Math.round(Math.random() * IntroAnimationDurationMs),
-          'easeOutBack',
+          'easeOutQuart',
         )
         .on('complete', () => {
           (sprite.width = cellSize), (sprite.height = cellSize);

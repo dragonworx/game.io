@@ -7,7 +7,14 @@ export type GameStatus = 'unconnected' | 'pre' | 'running' | 'over';
 
 export interface InitGameState {
   status: GameStatus;
-  players: PlayerInfo[];
+  players: PlayerPositionInfo[];
+}
+
+export interface PlayerPositionInfo extends PlayerInfo {
+  h: number;
+  v: number;
+  vectorX: number;
+  vectorY: number;
 }
 
 export const GridDivisions = 20; // odd numbers work best for initial distribution of players

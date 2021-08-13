@@ -1,4 +1,4 @@
-import { GameStatus, PlayerInfo } from '../../common';
+import { GameStatus, PlayerInfo, PlayerPositionInfo } from '../../common';
 import { Graphics } from './graphics';
 import { Player } from './player';
 import { Alert } from './components/alert';
@@ -30,12 +30,14 @@ export class Game {
     this.gridView = new GridView(grid, graphics);
   }
 
-  newPlayer(info: PlayerInfo) {
+  getPlayer(clientId: string) {
+    return this.players.find(player => player.info.clientId === clientId)!;
+  }
+
+  newPlayer(playerInfo: PlayerInfo) {
     const { players, graphics, io } = this;
-    const player = new Player(io, info, graphics);
+    const player = new Player(this, io, playerInfo, graphics);
     players.push(player);
-    graphics.addObject(player.container);
-    this.distributePlayers();
     return player;
   }
 
@@ -47,7 +49,7 @@ export class Game {
     }
     const alert = new Alert(graphics, `"${info.name}" joined!`);
     alert.on('shown', () => {
-      const [x, y] = player.initialPosition;
+      const [x, y] = player.position;
       alert.hide(x, y);
     });
     alert.show();
@@ -58,59 +60,24 @@ export class Game {
     const index = players.findIndex(
       player => player.info.clientId === clientId,
     );
-    const player = players[index];
-    players.splice(index, 1);
-    player.dispose();
-    const alert = new Alert(graphics, `"${player.info.name}" disconnected!`);
-    alert.on('shown', () => alert.hide(graphics.center[0], this.grid.margin));
-    alert.show();
+    if (index > -1) {
+      const player = players[index];
+      players.splice(index, 1);
+      player.dispose();
+      const alert = new Alert(graphics, `"${player.info.name}" disconnected!`);
+      alert.on('shown', () => alert.hide(graphics.center[0], this.grid.margin));
+      alert.show();
+    }
   }
 
   initGridView() {
     this.gridView.init();
   }
 
-  distributePlayers() {
-    const { players, grid } = this;
-    const { divisions } = grid;
-    const top: Player[] = [];
-    const left: Player[] = [];
-    const bottom: Player[] = [];
-    const right: Player[] = [];
-    const edges: Player[][] = [top, left, bottom, right];
-    let index = 0;
-    players.forEach(player => {
-      const edge = edges[index];
-      edge.push(player);
-      index = (index + 1) % 4;
-    });
-    const topInc = Math.round(divisions / (top.length + 1));
-    const leftInc = Math.round(divisions / (left.length + 1));
-    const bottomInc = Math.round(divisions / (bottom.length + 1));
-    const rightInc = Math.round(divisions / (right.length + 1));
-    const topOffset = top.length === 4 ? 1 : 0;
-    const leftOffset = left.length === 5 ? 1 : 0;
-    const bottomOffset = bottom.length === 4 ? 1 : 0;
-    const rightOffset = right.length === 5 ? 1 : 0;
-    top.forEach((player, i) => {
-      const h = topInc * (i + 1) + topOffset;
-      const bounds = grid.getCell(h, 1).bounds;
-      player.setInitialPosition(bounds.centerX, bounds.top, 'top');
-    });
-    left.forEach((player, i) => {
-      const v = leftInc * (i + 1) + leftOffset;
-      const bounds = grid.getCell(1, v).bounds;
-      player.setInitialPosition(bounds.left, bounds.centerY, 'left');
-    });
-    bottom.forEach((player, i) => {
-      const h = bottomInc * (i + 1) + bottomOffset;
-      const bounds = grid.getCell(h, divisions).bounds;
-      player.setInitialPosition(bounds.centerX, bounds.bottom, 'bottom');
-    });
-    right.forEach((player, i) => {
-      const v = rightInc * (i + 1) + rightOffset;
-      const bounds = grid.getCell(divisions, v).bounds;
-      player.setInitialPosition(bounds.right, bounds.centerY, 'right');
+  updatePlayerInitialPositions(playerPositionInfo: PlayerPositionInfo[]) {
+    playerPositionInfo.forEach(info => {
+      const player = this.getPlayer(info.clientId);
+      player.setInitialPosition(info);
     });
   }
 

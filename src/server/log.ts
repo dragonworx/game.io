@@ -1,6 +1,8 @@
 import logger from 'node-color-log';
 
-const stringify = (message: any) =>
+export { logger };
+
+export const stringify = (message: any) =>
   typeof message === 'string' ? message : JSON.stringify(message);
 
 export function fatalExit(message: any, errorCode = -1) {

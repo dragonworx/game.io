@@ -9,12 +9,14 @@ import {
 import { PlayerNameInput } from './components/playerNameInput';
 import { Game } from './game';
 import {
+  GameStatus,
   GridDivisions,
   GridMargin,
   GridSize,
   InitGameState,
   PingIntervalMs,
   PlayerInfo,
+  PlayerPositionInfo,
 } from '../../common';
 
 export class App {
@@ -39,13 +41,28 @@ export class App {
     io.on(ServerEvents.SocketPong, this.onSocketPong);
     io.on(ServerEvents.PlayerJoined, this.onPlayerJoined);
     io.on(ServerEvents.PlayerDisconnected, this.onPlayerDisconnected);
+    io.on(ServerEvents.PlayerInitialPositions, this.onPlayerInitialPositions);
     io.on(ServerEvents.GameInit, this.onGameInit);
     io.on(ServerEvents.GameStart, this.onGameStart);
+    io.on(ServerEvents.SetGameState, this.onSetGameState);
 
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
 
     this.game = new Game(io, graphics, GridSize, GridDivisions, GridMargin);
+
+    this.initDebug();
+  }
+
+  initDebug() {
+    const debug = document.querySelector('#debug')!;
+    const select = document.querySelector(
+      '#debug select',
+    )! as HTMLSelectElement;
+    const button = debug.querySelector('button')! as HTMLButtonElement;
+    button.onclick = () => {
+      this.io.messageSocket(ClientEvents.Debug, select.value);
+    };
   }
 
   init() {
@@ -53,6 +70,7 @@ export class App {
       this.game.initGridView();
       document.querySelector('#main header')!.classList.add('expanded');
       new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
+      this.io.messageSocket(ClientEvents.GetGameState);
     });
   }
 
@@ -64,6 +82,8 @@ export class App {
     }
     this.init();
     this.hasConnected = true;
+
+    document.querySelector('#clientId span')!.innerHTML = this.io.clientId;
   };
 
   onUDPMessage = <T>(message: Message<T>) => {
@@ -99,7 +119,7 @@ export class App {
   onUDPPong = () => {
     endPing(this.udpPing!);
     console.debug('onUDPPong:', this.udpPing!.elapsed);
-    document.getElementById('latency-udp')!.innerText = String(
+    document.getElementById('latency-udp span')!.innerText = String(
       this.udpPing!.elapsed,
     );
     setTimeout(() => this.startUDPPing(), PingIntervalMs);
@@ -108,16 +128,15 @@ export class App {
   onSocketPong = () => {
     endPing(this.socketPing!);
     console.debug('onSocketPong:', this.socketPing!.elapsed);
-    document.getElementById('latency-socket')!.innerText = String(
+    document.getElementById('latency-socket span')!.innerText = String(
       this.socketPing!.elapsed,
     );
     setTimeout(() => this.startSocketPing(), PingIntervalMs);
   };
 
-  onInitConnection = (gameState: InitGameState) => {
+  onInitConnection = (gameStatus: GameStatus) => {
     const { game } = this;
-    game.status = gameState.status;
-    gameState.players.forEach(player => game.newPlayer(player));
+    game.status = gameStatus;
   };
 
   onPlayerNameSubmit = (playerName: string) => {
@@ -136,11 +155,23 @@ export class App {
     this.game.removePlayer(clientId);
   };
 
+  onPlayerInitialPositions = (playerPositionInfo: PlayerPositionInfo[]) => {
+    console.log('onPlayerInitialPositions', playerPositionInfo);
+    this.game.updatePlayerInitialPositions(playerPositionInfo);
+  };
+
   onGameInit = () => {
     this.game.init();
   };
 
   onGameStart = () => {
     this.game.start();
+  };
+
+  onSetGameState = (gameState: InitGameState) => {
+    gameState.players.forEach(info => {
+      const player = this.game.newPlayer(info);
+      player.setInitialPosition(info);
+    });
   };
 }

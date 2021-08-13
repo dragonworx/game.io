@@ -22,10 +22,12 @@ export enum Protocol {
 
 // sent by client
 export enum ClientEvents {
+  Debug = 'debug',
   UDPPing = 'udpPing',
   SocketPing = 'socketPing',
   PlayerJoin = 'playerJoin',
   PlayerInput = 'playerInput',
+  GetGameState = 'getGameState',
 }
 
 // sent by server
@@ -36,7 +38,9 @@ export enum ServerEvents {
   SocketPong = 'socketPong',
   InitConnection = 'initConnection',
   PlayerJoined = 'playerJoined',
+  PlayerInitialPositions = 'playerInitialPositions',
   PlayerDisconnected = 'playerDisconnected',
   GameInit = 'gameInit',
   GameStart = 'gameStart',
+  SetGameState = 'setGameState',
 }

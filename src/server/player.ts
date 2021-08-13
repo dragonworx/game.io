@@ -1,5 +1,5 @@
 import { PlayerInfo } from '../common';
-import { Point } from '../common/grid';
+import { Cell, Point } from '../common/grid';
 import { Client } from './client';
 import { info } from './log';
 
@@ -7,6 +7,7 @@ export class Player {
   client: Client;
   name: string;
   inputBuffer?: string;
+  cell?: Cell;
   vector: Point = [0, 0];
 
   constructor(client: Client, name: string) {
@@ -24,6 +25,11 @@ export class Player {
   bufferInput(code: string) {
     info(`Player[${this.client.id}].Input:`, code);
     this.inputBuffer = code;
+  }
+
+  setInitialCell(cell: Cell, vector: Point) {
+    this.cell = cell;
+    this.vector = vector;
   }
 
   gameInit() {}
