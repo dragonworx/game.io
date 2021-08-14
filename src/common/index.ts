@@ -52,7 +52,7 @@ export interface GameState {
 }
 
 export interface PlayerPositionInfo extends PlayerInfo {
-  x: number;
-  y: number;
+  h: number;
+  v: number;
   d: Direction;
 }

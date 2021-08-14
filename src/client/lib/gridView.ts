@@ -25,8 +25,10 @@ export class GridView {
       const { h, v } = cell;
       const sprite = new PIXI.Sprite(texture);
       const [x, y] = grid.getCell(h, v).position;
-      sprite.x = x;
-      sprite.y = y;
+      const halfSize = grid.cellSize / 2;
+      sprite.x = x + halfSize;
+      sprite.y = y + halfSize;
+      sprite.anchor.x = sprite.anchor.y = 0.5;
       sprite.width = 0;
       sprite.height = 0;
       sprite.alpha = 0;
@@ -41,12 +43,27 @@ export class GridView {
             alpha: 1,
           },
           Math.round(Math.random() * IntroAnimationDurationMs),
-          'easeOutQuart',
+          'easeOutCirc',
         )
         .on('complete', () => {
           (sprite.width = cellSize), (sprite.height = cellSize);
           sprite.alpha = 1;
         });
     });
+  }
+
+  breakCell(cell: Cell) {
+    const { graphics, cellSpriteMap } = this;
+    const sprite = cellSpriteMap.get(cell)!;
+    cell.isEmpty = true;
+    graphics.ease(
+      sprite,
+      {
+        width: 0,
+        height: 0,
+      },
+      2000,
+      'easeOutBack',
+    );
   }
 }

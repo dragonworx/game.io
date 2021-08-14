@@ -68,6 +68,7 @@ export class Cell {
   h: number;
   v: number;
   bounds: Bounds;
+  isEmpty: boolean = false;
 
   constructor(grid: Grid, h: number, v: number, bounds: Bounds) {
     this.grid = grid;
@@ -110,6 +111,11 @@ export class Cell {
 
   get position() {
     return this.bounds.position;
+  }
+
+  get center() {
+    let { centerX: x, centerY: y } = this.bounds;
+    return [x, y];
   }
 }
 

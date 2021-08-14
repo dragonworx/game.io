@@ -7,7 +7,6 @@ export class GridProxy extends EventEmitter {
   cell: Cell;
   direction: Direction = Direction.Stationary;
   lastDirection: Direction = Direction.Stationary;
-  offset: number = 0;
   action?: Action;
 
   constructor(grid: Grid) {
@@ -19,18 +18,6 @@ export class GridProxy extends EventEmitter {
   setCell(cell: Cell, direction: Direction = this.direction) {
     this.cell = cell;
     this.direction = direction;
-    this.offset = 0;
-  }
-
-  get position() {
-    const { cell, offset, direction } = this;
-    const { bounds } = cell;
-    let { centerX: x, centerY: y } = bounds;
-    if (direction === Direction.Left) x -= offset;
-    if (direction === Direction.Right) x += offset;
-    if (direction === Direction.Up) y -= offset;
-    if (direction === Direction.Down) y += offset;
-    return [x, y];
   }
 
   faceLeft() {
@@ -66,8 +53,7 @@ export class GridProxy extends EventEmitter {
   }
 
   moveToNextCell() {
-    const { direction, cell, offset } = this;
-    const o = offset;
+    const { direction, cell } = this;
     if (direction === Direction.Down) {
       this.setCell(cell.south);
     } else if (direction === Direction.Up) {
@@ -77,6 +63,5 @@ export class GridProxy extends EventEmitter {
     } else if (direction === Direction.Right) {
       this.setCell(cell.east);
     }
-    this.offset = o * -1;
   }
 }

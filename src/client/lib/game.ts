@@ -42,8 +42,8 @@ export class ClientGame {
   }
 
   newPlayer(playerInfo: PlayerInfo) {
-    const { players, graphics, io, grid } = this;
-    const player = new ClientPlayer(grid, io, playerInfo, graphics);
+    const { players, graphics, io, grid, gridView } = this;
+    const player = new ClientPlayer(grid, io, playerInfo, graphics, gridView);
     players.push(player);
     return player;
   }

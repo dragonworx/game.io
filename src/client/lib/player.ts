@@ -1,6 +1,7 @@
 import { Direction, PlayerInfo, PlayerPositionInfo } from '../../common';
-import { Grid } from '../../common/grid';
+import { Cell, Grid } from '../../common/grid';
 import { degToRad, Graphics, PIXI } from './graphics';
+import { GridView } from './gridView';
 import { ClientIO } from './io';
 
 export class ClientPlayer {
@@ -8,17 +9,27 @@ export class ClientPlayer {
   io: ClientIO;
   info: PlayerInfo;
   graphics: Graphics;
+  gridView: GridView;
   container: PIXI.Container;
   sprite: PIXI.Sprite;
   label: PIXI.Text;
   hasAddedToStage: boolean = false;
   direction: Direction = Direction.Stationary;
+  cell: Cell;
 
-  constructor(grid: Grid, io: ClientIO, info: PlayerInfo, graphics: Graphics) {
+  constructor(
+    grid: Grid,
+    io: ClientIO,
+    info: PlayerInfo,
+    graphics: Graphics,
+    gridView: GridView,
+  ) {
     this.grid = grid;
     this.io = io;
     this.info = info;
     this.graphics = graphics;
+    this.gridView = gridView;
+    this.cell = grid.cells[0][0];
 
     const container = (this.container = new PIXI.Container());
     const label = (this.label = new PIXI.Text(info.n, {
@@ -43,8 +54,11 @@ export class ClientPlayer {
   }
 
   setInitialPosition(info: PlayerPositionInfo) {
-    const { hasAddedToStage, graphics, container } = this;
-    const { x, y, d } = info;
+    const { hasAddedToStage, graphics, container, grid } = this;
+    const { h, v, d } = info;
+    const cell = grid.getCell(h, v);
+    const [x, y] = cell.center;
+    this.cell = cell;
     this.direction = d;
     const prevX = container.x;
     const prevY = container.y;
@@ -73,8 +87,14 @@ export class ClientPlayer {
   }
 
   updateFromState(info: PlayerPositionInfo, fps: number) {
-    const { container, graphics, grid } = this;
-    const { x, y, d } = info;
+    const { container, grid, gridView } = this;
+    const { h, v, d } = info;
+    gridView.breakCell(this.cell);
+    const cell = (this.cell = grid.getCell(h, v));
+    if (cell.isEmpty) {
+      console.log('!');
+    }
+    const [x, y] = cell.center;
     this.direction = d;
     container.x = x;
     container.y = y;

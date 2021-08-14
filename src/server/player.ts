@@ -24,12 +24,11 @@ export class ServerPlayer {
 
   get positionInfo(): PlayerPositionInfo {
     const { proxy } = this;
-    const { position, direction } = proxy;
-    const [x, y] = position;
+    const { cell, direction } = proxy;
     return {
       ...this.info,
-      x,
-      y,
+      h: cell.h,
+      v: cell.v,
       d: direction,
     };
   }

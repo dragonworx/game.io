@@ -62,7 +62,8 @@ export class ServerGame {
     this.players.push(player);
     io.broadcastSocket(ServerSocketEvents.SocketPlayerJoined, player.info);
 
-    const playerPositionInfo = this.distributePlayers();
+    this.distributePlayers();
+    const playerPositionInfo = this.getPlayerPositionInfo();
     io.broadcastSocket(
       ServerSocketEvents.SocketPlayerInitialPositions,
       playerPositionInfo,
@@ -115,11 +116,6 @@ export class ServerGame {
       const v = rightInc * (i + 1) + rightOffset;
       player.proxy.setCell(grid.getCell(divisions, v), Direction.Left);
     });
-    return this.getPlayerPositionInfo();
-  }
-
-  getPlayerPositionInfo(): PlayerPositionInfo[] {
-    return this.players.map(player => player.positionInfo);
   }
 
   getGameState(): GameState {
@@ -128,6 +124,10 @@ export class ServerGame {
       p: this.getPlayerPositionInfo(),
       f: this.fps,
     };
+  }
+
+  getPlayerPositionInfo(): PlayerPositionInfo[] {
+    return this.players.map(player => player.positionInfo);
   }
 
   removePlayer(clientId: string) {
