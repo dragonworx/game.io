@@ -11,18 +11,18 @@ import {
 import { Grid } from '../common/grid';
 import { ServerEvents } from '../common/messaging';
 import { Client } from './client';
-import { IO } from './io';
-import { Player } from './player';
+import { ServerIO } from './io';
+import { ServerPlayer } from './player';
 
-export class Game {
-  io: IO;
-  players: Player[] = [];
+export class ServerGame {
+  io: ServerIO;
+  players: ServerPlayer[] = [];
   status: GameStatus = GameStatus.Pre;
   grid: Grid;
   fpsInterval: number;
   timer?: number;
 
-  constructor(io: IO) {
+  constructor(io: ServerIO) {
     this.io = io;
     this.grid = new Grid(GridSize, GridDivisions, GridMargin);
     this.fpsInterval = Math.round(1000 / FPS);
@@ -33,6 +33,7 @@ export class Game {
     this.players = [];
     clearInterval(this.timer);
     delete this.timer;
+    this.io.broadcastSocket(ServerEvents.SocketReload);
   }
 
   logGameState() {
@@ -40,8 +41,8 @@ export class Game {
   }
 
   newPlayer(client: Client, playerName: string) {
-    const { io, players } = this;
-    const player = new Player(client, playerName);
+    const { io, players, grid } = this;
+    const player = new ServerPlayer(grid, client, playerName);
     this.players.push(player);
     io.broadcastSocket(ServerEvents.SocketPlayerJoined, player.info);
 
@@ -63,11 +64,11 @@ export class Game {
   distributePlayers() {
     const { players, grid } = this;
     const { divisions } = grid;
-    const top: Player[] = [];
-    const left: Player[] = [];
-    const bottom: Player[] = [];
-    const right: Player[] = [];
-    const edges: Player[][] = [top, left, bottom, right];
+    const top: ServerPlayer[] = [];
+    const left: ServerPlayer[] = [];
+    const bottom: ServerPlayer[] = [];
+    const right: ServerPlayer[] = [];
+    const edges: ServerPlayer[][] = [top, left, bottom, right];
     let index = 0;
     players.forEach(player => {
       const edge = edges[index];
@@ -104,11 +105,11 @@ export class Game {
   getPlayerPositionInfo(): PlayerPositionInfo[] {
     return this.players.map(player => ({
       ...player.info,
-      h: player.cell!.h,
-      v: player.cell!.v,
-      vx: player.vector[0],
-      vy: player.vector[1],
-      o: player.offset,
+      h: player.proxy.cell!.h,
+      v: player.proxy.cell!.v,
+      vx: player.proxy.vector[0],
+      vy: player.proxy.vector[1],
+      o: player.proxy.offset,
     }));
   }
 
@@ -150,10 +151,10 @@ export class Game {
     this.status = GameStatus.Running;
     players.forEach(player => player.gameStart());
     io.broadcastSocket(ServerEvents.SocketGameStart);
-    this.timer = setInterval(this.tick, this.fpsInterval);
+    this.timer = setInterval(this.update, this.fpsInterval);
   }
 
-  tick = (_time: number) => {
+  update = (_time: number) => {
     const { players, io } = this;
     players.forEach(player => player.update());
     io.broadcastUDP(ServerEvents.UDPUpdate, this.getGameState());

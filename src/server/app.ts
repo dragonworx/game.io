@@ -1,18 +1,18 @@
 import logger from 'node-color-log';
-import { IO } from './io';
+import { ServerIO } from './io';
 import { Client } from './client';
 import { debug } from './log';
-import { Game } from './game';
+import { ServerGame } from './game';
 import { Protocol, ServerEvents, ClientEvents } from '../common/messaging';
 
-export class App {
-  io: IO;
-  game: Game;
+export class ServerApp {
+  io: ServerIO;
+  game: ServerGame;
 
   constructor() {
-    const io = (this.io = new IO());
+    const io = (this.io = new ServerIO());
 
-    this.game = new Game(io);
+    this.game = new ServerGame(io);
 
     // handle protocol from client
     io.on(Protocol.UDPConnect, this.onUDPConnect);
@@ -62,7 +62,7 @@ export class App {
 
   onClientConnected = (client: Client) => {
     logger
-      .color('blue')
+      .color('black')
       .bgColor('green')
       .log(`onClientConnected: ${client.id}`);
     this.game.logGameState();

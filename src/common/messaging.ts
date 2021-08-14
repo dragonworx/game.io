@@ -44,4 +44,5 @@ export enum ServerEvents {
   SocketGameStart = 'socketGameStart',
   SocketRespondGameState = 'socketRespondGameState',
   UDPUpdate = 'updUpdate',
+  SocketReload = 'socketReload',
 }

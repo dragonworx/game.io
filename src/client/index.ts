@@ -1,4 +1,4 @@
 import './style.css';
-import { App } from './lib/app';
+import { ClientApp } from './lib/app';
 
-new App();
+new ClientApp();

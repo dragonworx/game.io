@@ -30,7 +30,7 @@ export { Socket };
 
 export const TCPListenPort = 3000;
 
-export class IO extends EventEmitter {
+export class ServerIO extends EventEmitter {
   udp: GeckosServer;
   socket: any;
   clients: Map<string, Client> = new Map();

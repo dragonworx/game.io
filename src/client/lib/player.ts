@@ -1,44 +1,32 @@
 import { PlayerInfo, PlayerPositionInfo } from '../../common';
-import { Cell, Point } from '../../common/grid';
-import { Game } from './game';
+import { Grid } from '../../common/grid';
+import { GridProxy } from '../../common/proxy';
 import { degToRad, Graphics, PIXI } from './graphics';
-import { IO } from './io';
+import { ClientIO } from './io';
 
-export type Edge = 'top' | 'left' | 'bottom' | 'right';
-
-export class Player {
-  game: Game;
-  io: IO;
+export class ClientPlayer {
+  io: ClientIO;
   info: PlayerInfo;
   graphics: Graphics;
   container: PIXI.Container;
   sprite: PIXI.Sprite;
   label: PIXI.Text;
   hasAddedToStage: boolean = false;
-  position: Point = [-1, -1];
-  cell?: Cell;
-  vector: Point = [0, 0];
+  proxy: GridProxy;
 
-  constructor(game: Game, io: IO, info: PlayerInfo, graphics: Graphics) {
-    this.game = game;
+  constructor(grid: Grid, io: ClientIO, info: PlayerInfo, graphics: Graphics) {
     this.io = io;
     this.info = info;
     this.graphics = graphics;
-    this.container = new PIXI.Container();
-    const container = new PIXI.Container();
-    this.container.addChild(container);
+    this.proxy = new GridProxy(grid);
+
+    const container = (this.container = new PIXI.Container());
     const label = (this.label = new PIXI.Text(info.n, {
       fontFamily: 'Orbitron',
       fontSize: 14,
       fill: '#ffffff',
       stroke: '#000000',
     }));
-    // const mask = (this.mask = new PIXI.Graphics());
-    // mask.beginFill(0xffffff);
-    // mask.drawRect(0, 0, 30, 30);
-    // mask.endFill();
-    // this.container.addChild(mask);
-    // this.container.mask = mask;
 
     const texture = graphics.textures.get('blade');
     const sprite = (this.sprite = new PIXI.Sprite(texture));
@@ -50,17 +38,9 @@ export class Player {
   }
 
   setInitialPosition(info: PlayerPositionInfo) {
-    const { hasAddedToStage, graphics, container, game, position } = this;
-    const [prevX, prevY] = position;
-    const { h, v, vx, vy } = info;
-    const cell = (this.cell = game.grid.getCell(h, v));
-    const { bounds } = cell;
-    this.vector[0] = vx;
-    this.vector[1] = vy;
-    const x = bounds.centerX;
-    const y = bounds.centerY;
-    position[0] = x;
-    position[1] = y;
+    const { hasAddedToStage, graphics, proxy, container } = this;
+    const [prevX, prevY] = proxy.setPosition(info);
+    const [x, y] = proxy.position;
 
     this.setLabelPosition();
 
@@ -86,25 +66,17 @@ export class Player {
   }
 
   updateFromState(info: PlayerPositionInfo) {
-    const { container, game, position } = this;
-    const { h, v, vx, vy, o } = info;
-    const cell = (this.cell = game.grid.getCell(h, v));
-    const { bounds } = cell;
-    this.vector[0] = vx;
-    this.vector[1] = vy;
-    let x = bounds.centerX;
-    let y = bounds.centerY;
-    if (vy === 1) y += o;
-    container.x = position[0] = x;
-    container.y = position[1] = y;
+    const { container, proxy } = this;
+    proxy.setPosition(info);
+    const [x, y] = proxy.position;
+    container.x = x;
+    container.y = y;
     this.setLabelPosition();
   }
 
   setLabelPosition() {
-    const {
-      vector: [vectorX, vectorY],
-      label,
-    } = this;
+    const { label, proxy } = this;
+    const [vectorX, vectorY] = proxy.vector;
     if (vectorY === 1) {
       //top
       label.y = 25;
@@ -127,6 +99,7 @@ export class Player {
   }
 
   onUpdate = () => {
+    // this is mainly for graphics updates, server has authoritive updates
     this.sprite.rotation += degToRad(1);
   };
 }

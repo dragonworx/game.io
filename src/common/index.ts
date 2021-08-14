@@ -1,3 +1,10 @@
+export const GridDivisions = 20; // odd numbers work best for initial distribution of players
+export const GridSize = 750;
+export const GridMargin = 20;
+export const PingIntervalMs = 1000;
+export const FPS = 60;
+export const InitialPlayerSpeed = 1;
+
 export interface PlayerInfo {
   cid: string;
   n: string;
@@ -22,9 +29,3 @@ export interface PlayerPositionInfo extends PlayerInfo {
   vy: number;
   o: number;
 }
-
-export const GridDivisions = 20; // odd numbers work best for initial distribution of players
-export const GridSize = 750;
-export const GridMargin = 20;
-export const PingIntervalMs = 1000;
-export const FPS = 60;

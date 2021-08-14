@@ -4,7 +4,7 @@ import io, { Socket } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 import { ClientEvents, Message, Protocol } from '../../common/messaging';
 
-export class IO extends EventEmitter {
+export class ClientIO extends EventEmitter {
   clientId: string;
   udp: ClientChannel;
   socket: typeof Socket;

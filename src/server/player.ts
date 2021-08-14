@@ -1,19 +1,20 @@
 import { PlayerInfo } from '../common';
-import { Cell, Point } from '../common/grid';
+import { Cell, Grid, Point } from '../common/grid';
+import { GridProxy } from '../common/proxy';
 import { Client } from './client';
+import { ServerGame } from './game';
 import { info } from './log';
 
-export class Player {
+export class ServerPlayer {
   client: Client;
   name: string;
   inputBuffer?: string;
-  cell?: Cell;
-  vector: Point = [0, 0];
-  offset: number = 0;
+  proxy: GridProxy;
 
-  constructor(client: Client, name: string) {
+  constructor(grid: Grid, client: Client, name: string) {
     this.client = client;
     this.name = name;
+    this.proxy = new GridProxy(grid);
   }
 
   get info(): PlayerInfo {
@@ -29,8 +30,8 @@ export class Player {
   }
 
   setInitialCell(cell: Cell, vector: Point) {
-    this.cell = cell;
-    this.vector = vector;
+    this.proxy.cell = cell;
+    this.proxy.vector = vector;
   }
 
   gameInit() {}
@@ -38,6 +39,6 @@ export class Player {
   gameStart() {}
 
   update() {
-    this.offset += 1;
+    this.proxy.update();
   }
 }

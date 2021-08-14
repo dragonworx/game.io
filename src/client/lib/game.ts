@@ -5,24 +5,24 @@ import {
   PlayerPositionInfo,
 } from '../../common';
 import { Graphics } from './graphics';
-import { Player } from './player';
+import { ClientPlayer } from './player';
 import { Alert } from './components/alert';
 import { ClientEvents } from '../../common/messaging';
 import { Grid } from '../../common/grid';
 import { GridView } from './gridView';
-import { IO } from './io';
+import { ClientIO } from './io';
 
-export class Game {
-  io: IO;
+export class ClientGame {
+  io: ClientIO;
   graphics: Graphics;
-  players: Player[] = [];
+  players: ClientPlayer[] = [];
   status: GameStatus = GameStatus.Unconnected;
   grid: Grid;
   gridView: GridView;
-  userPlayer?: Player;
+  userPlayer?: ClientPlayer;
 
   constructor(
-    io: IO,
+    io: ClientIO,
     graphics: Graphics,
     gridSize: number,
     gridDivisions: number,
@@ -40,8 +40,8 @@ export class Game {
   }
 
   newPlayer(playerInfo: PlayerInfo) {
-    const { players, graphics, io } = this;
-    const player = new Player(this, io, playerInfo, graphics);
+    const { players, graphics, io, grid } = this;
+    const player = new ClientPlayer(grid, io, playerInfo, graphics);
     players.push(player);
     return player;
   }
@@ -54,7 +54,7 @@ export class Game {
     }
     const alert = new Alert(graphics, `"${info.n}" joined!`);
     alert.on('shown', () => {
-      const [x, y] = player.position;
+      const [x, y] = player.proxy.position;
       alert.hide(x, y);
     });
     alert.show();

@@ -1,4 +1,4 @@
-import { IO, Ping, startPing, endPing } from './io';
+import { ClientIO, Ping, startPing, endPing } from './io';
 import { Graphics } from './graphics';
 import {
   Protocol,
@@ -7,7 +7,7 @@ import {
   ClientEvents,
 } from '../../common/messaging';
 import { PlayerNameInput } from './components/playerNameInput';
-import { Game } from './game';
+import { ClientGame } from './game';
 import {
   GameStatus,
   GridDivisions,
@@ -26,16 +26,16 @@ const excludeLogUDPMessages: string[] = [
 
 const excludeLogSocketMessages: string[] = [ServerEvents.SocketPong];
 
-export class App {
-  io: IO;
+export class ClientApp {
+  io: ClientIO;
   graphics: Graphics;
   hasConnected: boolean = false;
   udpPing?: Ping;
   socketPing?: Ping;
-  game: Game;
+  game: ClientGame;
 
   constructor() {
-    const io = (this.io = new IO());
+    const io = (this.io = new ClientIO());
 
     io.on(Protocol.Connected, this.onConnected);
     io.on(Protocol.UDPMessage, this.onUDPMessage);
@@ -59,11 +59,18 @@ export class App {
     io.on(ServerEvents.SocketGameStart, this.onSocketGameStart);
     io.on(ServerEvents.SocketRespondGameState, this.onSocketRespondGameState);
     io.on(ServerEvents.UDPUpdate, this.onUDPUpdate);
+    io.on(ServerEvents.SocketReload, this.onSocketReload);
 
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
 
-    this.game = new Game(io, graphics, GridSize, GridDivisions, GridMargin);
+    this.game = new ClientGame(
+      io,
+      graphics,
+      GridSize,
+      GridDivisions,
+      GridMargin,
+    );
 
     this.initDebug();
   }
@@ -194,5 +201,9 @@ export class App {
 
   onUDPUpdate = (gameState: GameState) => {
     this.game.updateFromState(gameState);
+  };
+
+  onSocketReload = () => {
+    window.location.reload();
   };
 }
