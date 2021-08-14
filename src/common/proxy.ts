@@ -1,45 +1,82 @@
 import { EventEmitter } from 'eventemitter3';
-import { InitialPlayerSpeed, PlayerPositionInfo } from '.';
-import { Cell, Grid, Point } from './grid';
+import { Action, Direction } from '.';
+import { Cell, Grid } from './grid';
 
 export class GridProxy extends EventEmitter {
   grid: Grid;
-  cell?: Cell;
-  vector: Point = [0, 0];
-  position: Point = [-1, -1];
+  cell: Cell;
+  direction: Direction = Direction.Stationary;
+  lastDirection: Direction = Direction.Stationary;
   offset: number = 0;
-  speed: number = InitialPlayerSpeed;
+  action?: Action;
 
   constructor(grid: Grid) {
     super();
     this.grid = grid;
+    this.cell = grid.cells[0][0];
   }
 
-  setPosition(info: PlayerPositionInfo): Point {
-    const { h, v, vx, vy, o } = info;
-    const { position, vector, grid, offset } = this;
-    const [prevX, prevY] = position;
+  setCell(cell: Cell, direction: Direction = this.direction) {
+    this.cell = cell;
+    this.direction = direction;
+    this.offset = 0;
+  }
 
-    const cell = grid.getCell(h, v);
+  get position() {
+    const { cell, offset, direction } = this;
     const { bounds } = cell;
-    vector[0] = vx;
-    vector[1] = vy;
-    let x = bounds.centerX;
-    let y = bounds.centerY;
-    this.offset = o;
+    let { centerX: x, centerY: y } = bounds;
+    if (direction === Direction.Left) x -= offset;
+    if (direction === Direction.Right) x += offset;
+    if (direction === Direction.Up) y -= offset;
+    if (direction === Direction.Down) y += offset;
+    return [x, y];
+  }
 
-    if (vx === -1) x -= offset;
-    if (vx === 1) x += offset;
-    if (vy === -1) y -= offset;
-    if (vy === 1) y += offset;
+  faceLeft() {
+    this.direction = Direction.Left;
+  }
 
-    position[0] = x;
-    position[1] = y;
+  faceRight() {
+    this.direction = Direction.Right;
+  }
 
-    return [prevX, prevY];
+  faceUp() {
+    this.direction = Direction.Up;
+  }
+
+  faceDown() {
+    this.direction = Direction.Down;
   }
 
   update() {
-    this.offset += this.speed;
+    this.handleInput();
+    this.moveToNextCell();
+  }
+
+  handleInput() {
+    const { action, direction } = this;
+    if (action !== undefined) {
+      this.lastDirection = direction;
+      action === Action.Left && this.faceLeft();
+      action === Action.Right && this.faceRight();
+      action === Action.Up && this.faceUp();
+      action === Action.Down && this.faceDown();
+    }
+  }
+
+  moveToNextCell() {
+    const { direction, cell, offset } = this;
+    const o = offset;
+    if (direction === Direction.Down) {
+      this.setCell(cell.south);
+    } else if (direction === Direction.Up) {
+      this.setCell(cell.north);
+    } else if (direction === Direction.Left) {
+      this.setCell(cell.west);
+    } else if (direction === Direction.Right) {
+      this.setCell(cell.east);
+    }
+    this.offset = o * -1;
   }
 }

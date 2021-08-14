@@ -5,8 +5,11 @@ import {
   GridSize,
   GridDivisions,
   GridMargin,
-  FPS,
+  InitialFPS,
+  MAXFPS,
+  FPSScalar,
   PlayerPositionInfo,
+  Direction,
 } from '../common';
 import { Grid } from '../common/grid';
 import { ServerSocketEvents, ServerUDPEvents } from '../common/messaging';
@@ -19,16 +22,26 @@ export class ServerGame {
   players: ServerPlayer[] = [];
   status: GameStatus = GameStatus.Pre;
   grid: Grid;
-  timer?: number;
+  paused: boolean = false;
+  fps: number = InitialFPS;
 
   constructor(io: ServerIO) {
     this.io = io;
     this.grid = new Grid(GridSize, GridDivisions, GridMargin);
-    const fpsInterval = Math.round(1000 / FPS);
-    setInterval(this.update, fpsInterval);
+    this.scheduleNextFrame();
+  }
+
+  scheduleNextFrame() {
+    setTimeout(this.update, Math.round(1000 / this.fps));
+  }
+
+  increaseSpeed() {
+    this.fps = Math.min(this.fps * FPSScalar, MAXFPS);
   }
 
   reset() {
+    this.stop();
+    this.paused = false;
     this.status = GameStatus.Pre;
     this.players = [];
     this.io.broadcastSocket(ServerSocketEvents.SocketReload);
@@ -88,38 +101,32 @@ export class ServerGame {
     const rightOffset = right.length === 5 ? 1 : 0;
     top.forEach((player, i) => {
       const h = topInc * (i + 1) + topOffset;
-      player.setInitialCell(grid.getCell(h, 1), [0, 1]);
+      player.proxy.setCell(grid.getCell(h, 1), Direction.Down);
     });
     left.forEach((player, i) => {
       const v = leftInc * (i + 1) + leftOffset;
-      player.setInitialCell(grid.getCell(1, v), [1, 0]);
+      player.proxy.setCell(grid.getCell(1, v), Direction.Right);
     });
     bottom.forEach((player, i) => {
       const h = bottomInc * (i + 1) + bottomOffset;
-      player.setInitialCell(grid.getCell(h, divisions), [-1, 0]);
+      player.proxy.setCell(grid.getCell(h, divisions), Direction.Up);
     });
     right.forEach((player, i) => {
       const v = rightInc * (i + 1) + rightOffset;
-      player.setInitialCell(grid.getCell(divisions, v), [-1, 0]);
+      player.proxy.setCell(grid.getCell(divisions, v), Direction.Left);
     });
     return this.getPlayerPositionInfo();
   }
 
   getPlayerPositionInfo(): PlayerPositionInfo[] {
-    return this.players.map(player => ({
-      ...player.info,
-      h: player.proxy.cell!.h,
-      v: player.proxy.cell!.v,
-      vx: player.proxy.vector[0],
-      vy: player.proxy.vector[1],
-      o: player.proxy.offset,
-    }));
+    return this.players.map(player => player.positionInfo);
   }
 
   getGameState(): GameState {
     return {
       s: this.status,
       p: this.getPlayerPositionInfo(),
+      f: this.fps,
     };
   }
 
@@ -151,7 +158,9 @@ export class ServerGame {
 
   start() {
     const { players, io } = this;
+    this.paused = false;
     this.status = GameStatus.Running;
+    this.fps = InitialFPS;
     players.forEach(player => player.gameStart());
     io.broadcastSocket(ServerSocketEvents.SocketGameStart);
   }
@@ -163,10 +172,16 @@ export class ServerGame {
   }
 
   update = () => {
-    if (this.status !== GameStatus.Running) {
+    this.scheduleNextFrame();
+    if (this.status !== GameStatus.Running || this.paused) {
       return;
     }
     this.players.forEach(player => player.update());
     this.io.broadcastUDP(ServerUDPEvents.UDPUpdate, this.getGameState());
+    this.increaseSpeed();
+  };
+
+  toggle = () => {
+    this.paused = !this.paused;
   };
 }

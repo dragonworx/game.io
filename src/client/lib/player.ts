@@ -1,10 +1,10 @@
-import { PlayerInfo, PlayerPositionInfo } from '../../common';
+import { Direction, PlayerInfo, PlayerPositionInfo } from '../../common';
 import { Grid } from '../../common/grid';
-import { GridProxy } from '../../common/proxy';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { ClientIO } from './io';
 
 export class ClientPlayer {
+  grid: Grid;
   io: ClientIO;
   info: PlayerInfo;
   graphics: Graphics;
@@ -12,13 +12,13 @@ export class ClientPlayer {
   sprite: PIXI.Sprite;
   label: PIXI.Text;
   hasAddedToStage: boolean = false;
-  proxy: GridProxy;
+  direction: Direction = Direction.Stationary;
 
   constructor(grid: Grid, io: ClientIO, info: PlayerInfo, graphics: Graphics) {
+    this.grid = grid;
     this.io = io;
     this.info = info;
     this.graphics = graphics;
-    this.proxy = new GridProxy(grid);
 
     const container = (this.container = new PIXI.Container());
     const label = (this.label = new PIXI.Text(info.n, {
@@ -37,10 +37,17 @@ export class ClientPlayer {
     graphics.addTicker(this.onUpdate);
   }
 
+  get position() {
+    const { container } = this;
+    return [container.x, container.y];
+  }
+
   setInitialPosition(info: PlayerPositionInfo) {
-    const { hasAddedToStage, graphics, proxy, container } = this;
-    const [prevX, prevY] = proxy.setPosition(info);
-    const [x, y] = proxy.position;
+    const { hasAddedToStage, graphics, container } = this;
+    const { x, y, d } = info;
+    this.direction = d;
+    const prevX = container.x;
+    const prevY = container.y;
 
     this.setLabelPosition();
 
@@ -49,7 +56,7 @@ export class ClientPlayer {
       this.hasAddedToStage = true;
     }
 
-    if (prevX === -1 && prevY === -1) {
+    if (prevX === 0 && prevY === 0) {
       container.x = x;
       container.y = y;
     } else {
@@ -65,34 +72,36 @@ export class ClientPlayer {
     }
   }
 
-  updateFromState(info: PlayerPositionInfo) {
-    const { container, proxy } = this;
-    proxy.setPosition(info);
-    const [x, y] = proxy.position;
+  updateFromState(info: PlayerPositionInfo, fps: number) {
+    const { container, graphics, grid } = this;
+    const { x, y, d } = info;
+    this.direction = d;
     container.x = x;
     container.y = y;
-    this.setLabelPosition();
   }
 
   setLabelPosition() {
-    const { label, proxy } = this;
-    const [vectorX, vectorY] = proxy.vector;
-    if (vectorY === 1) {
-      //top
+    const { label, direction } = this;
+    if (direction === Direction.Down) {
+      label.x = 0;
       label.y = 25;
-    } else if (vectorX === 1) {
-      //left
+    } else if (direction === Direction.Right) {
       label.x = 50;
-    } else if (vectorY === -1) {
-      //bottom
+      label.y = 0;
+    } else if (direction === Direction.Up) {
+      label.x = 0;
       label.y = -30;
-    } else if (vectorX === -1) {
-      //right
+    } else if (direction === Direction.Left) {
       label.x = -50;
+      label.y = 0;
     }
   }
 
   gameInit() {}
+
+  gameStart() {
+    this.label.visible = false;
+  }
 
   dispose() {
     this.graphics.removeObject(this.container);

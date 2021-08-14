@@ -42,15 +42,15 @@ export class ServerApp {
   }
 
   onSocketDebug = (_client: Client, cmd: string) => {
-    if (cmd === 'clear') {
-      console.clear();
-    } else if (cmd === 'gameState') {
-      this.game.logGameState();
-    } else if (cmd === 'reset') {
-      this.game.reset();
-    } else if (cmd === 'stop') {
-      this.game.stop();
-    }
+    const { game } = this;
+    const actions: { [k: string]: () => void } = {
+      clear: () => console.clear(),
+      gameState: () => game.logGameState(),
+      reset: () => game.reset(),
+      stop: () => game.stop(),
+      toggle: () => game.toggle(),
+    };
+    actions[cmd]();
   };
 
   onUDPConnect = (id: string) => {
@@ -86,6 +86,10 @@ export class ServerApp {
       ServerSocketEvents.SocketInitConnection,
       this.game.status,
     );
+
+    // for (let i = 0; i < 4; i++) {
+    //   this.game.newPlayer(client, `Player ${i + 1}`);
+    // }
   };
 
   onUDPPing = (client: Client) => {
@@ -102,8 +106,8 @@ export class ServerApp {
     this.game.logGameState();
   };
 
-  onSocketPlayerInput = (client: Client, code: string) => {
-    this.game.getPlayer(client.id).bufferInput(code);
+  onSocketPlayerInput = (client: Client, action: number) => {
+    this.game.getPlayer(client.id).bufferInput(action);
   };
 
   onSocketRequestGameState = (client: Client) => {

@@ -4,6 +4,7 @@ import {
   PlayerInfo,
   PlayerPositionInfo,
   gameStatusToString,
+  CodeToAction,
 } from '../../common';
 import { Graphics } from './graphics';
 import { ClientPlayer } from './player';
@@ -55,7 +56,7 @@ export class ClientGame {
     }
     const alert = new Alert(graphics, `"${info.n}" joined!`);
     alert.on('shown', () => {
-      const [x, y] = player.proxy.position;
+      const [x, y] = player.position;
       alert.hide(x, y);
     });
     alert.show();
@@ -104,6 +105,28 @@ export class ClientGame {
     alert.show();
   }
 
+  updateGameStatus(status: GameStatus) {
+    this.status = status;
+    document.querySelector('#gameStatus')!.innerHTML =
+      gameStatusToString(status);
+  }
+
+  hidePlayerNameInput() {
+    const playerName = document.querySelector('#playerName')!;
+    const header = document.querySelector('#main header')!;
+    playerName.classList.add('ready');
+    header.classList.remove('expanded');
+    header.classList.add('collapsed');
+  }
+
+  showPlayerNameInput() {
+    const playerName = document.querySelector('#playerName')!;
+    const header = document.querySelector('#main header')!;
+    playerName.classList.remove('ready');
+    header.classList.remove('collapsed');
+    header.classList.add('expanded');
+  }
+
   init() {
     // this.showCountdown();
     this.players.forEach(player => player.gameInit());
@@ -115,6 +138,7 @@ export class ClientGame {
     if (this.userPlayer) {
       this.bindInputEvents();
     }
+    this.players.forEach(player => player.gameStart());
   }
 
   stop() {
@@ -135,53 +159,18 @@ export class ClientGame {
 
   onKeyDown = (e: KeyboardEvent) => {
     const { code } = e;
-    const numericCode = this.getInputNumericCode(code);
-    if (numericCode !== -1) {
+    const numericCode = CodeToAction[code];
+    if (numericCode !== undefined) {
       this.io.messageUDP(ClientSocketEvents.SocketPlayerInput, numericCode);
     }
   };
 
-  getInputNumericCode(code: string) {
-    if (code === 'ArrowLeft') {
-      return 0;
-    } else if (code === 'ArrowRight') {
-      return 1;
-    } else if (code === 'ArrowUp') {
-      return 2;
-    } else if (code === 'ArrowDown') {
-      return 3;
-    } else if (code === 'Space') {
-      return 4;
-    }
-    return -1;
-  }
-
   updateFromState(gameState: GameState) {
     this.status = gameState.s;
+    document.querySelector('#fps')!.innerHTML = `${gameState.f.toFixed(1)}fps`;
     gameState.p.forEach(info => {
       const player = this.getPlayer(info.cid);
-      player.updateFromState(info);
+      player.updateFromState(info, gameState.f);
     });
-  }
-
-  updateGameStatus(status: GameStatus) {
-    document.querySelector('#gameStatus')!.innerHTML =
-      gameStatusToString(status);
-  }
-
-  hidePlayerNameInput() {
-    const playerName = document.querySelector('#playerName')!;
-    const header = document.querySelector('#main header')!;
-    playerName.classList.add('ready');
-    header.classList.remove('expanded');
-    header.classList.add('collapsed');
-  }
-
-  showPlayerNameInput() {
-    const playerName = document.querySelector('#playerName')!;
-    const header = document.querySelector('#main header')!;
-    playerName.classList.remove('ready');
-    header.classList.remove('collapsed');
-    header.classList.add('expanded');
   }
 }

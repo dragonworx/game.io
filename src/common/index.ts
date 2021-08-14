@@ -1,9 +1,10 @@
-export const GridDivisions = 20; // odd numbers work best for initial distribution of players
 export const GridSize = 750;
+export const GridDivisions = 40; // odd numbers work best for initial distribution of players
 export const GridMargin = 20;
 export const PingIntervalMs = 1000;
-export const FPS = 60;
-export const InitialPlayerSpeed = 1;
+export const InitialFPS = 5;
+export const MAXFPS = 20;
+export const FPSScalar = 1.005;
 
 export interface PlayerInfo {
   cid: string;
@@ -17,19 +18,41 @@ export enum GameStatus {
   Over = 3,
 }
 
-export const gameStatusToString = (status: GameStatus) => {
-  return ['Unconnected', 'Pre-Game', 'Running', 'Over'][status];
+export const gameStatusToString = (status: GameStatus) =>
+  ['Unconnected', 'Pre-Game', 'Running', 'Over'][status];
+
+export enum Action {
+  Left = 0,
+  Right = 1,
+  Up = 2,
+  Down = 3,
+  Fire = 4,
+}
+
+export const CodeToAction: { [k: string]: Action } = {
+  ArrowLeft: Action.Left,
+  ArrowRight: Action.Right,
+  ArrowUp: Action.Up,
+  ArrowDown: Action.Down,
+  Space: Action.Fire,
 };
+
+export enum Direction {
+  Stationary = 0,
+  Left = 1,
+  Right = 2,
+  Up = 3,
+  Down = 4,
+}
 
 export interface GameState {
   s: GameStatus;
+  f: number;
   p: PlayerPositionInfo[];
 }
 
 export interface PlayerPositionInfo extends PlayerInfo {
-  h: number;
-  v: number;
-  vx: number;
-  vy: number;
-  o: number;
+  x: number;
+  y: number;
+  d: Direction;
 }

@@ -1,14 +1,12 @@
-import { PlayerInfo } from '../common';
-import { Cell, Grid, Point } from '../common/grid';
+import { Action, PlayerInfo, PlayerPositionInfo } from '../common';
+import { Grid } from '../common/grid';
 import { GridProxy } from '../common/proxy';
 import { Client } from './client';
-import { ServerGame } from './game';
 import { info } from './log';
 
 export class ServerPlayer {
   client: Client;
   name: string;
-  inputBuffer?: string;
   proxy: GridProxy;
 
   constructor(grid: Grid, client: Client, name: string) {
@@ -24,14 +22,21 @@ export class ServerPlayer {
     };
   }
 
-  bufferInput(code: string) {
-    info(`Player[${this.client.id}].Input:`, code);
-    this.inputBuffer = code;
+  get positionInfo(): PlayerPositionInfo {
+    const { proxy } = this;
+    const { position, direction } = proxy;
+    const [x, y] = position;
+    return {
+      ...this.info,
+      x,
+      y,
+      d: direction,
+    };
   }
 
-  setInitialCell(cell: Cell, vector: Point) {
-    this.proxy.cell = cell;
-    this.proxy.vector = vector;
+  bufferInput(action: Action) {
+    info(`Player[${this.client.id}].Input:`, action);
+    this.proxy.action = action;
   }
 
   gameInit() {}

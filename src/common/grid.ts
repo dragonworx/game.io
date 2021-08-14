@@ -85,11 +85,27 @@ export class Cell {
   }
 
   get east() {
-    return this.grid.getCell(this.h - 1, this.v);
+    return this.grid.getCell(this.h + 1, this.v);
   }
 
   get west() {
-    return this.grid.getCell(this.h + 1, this.v);
+    return this.grid.getCell(this.h - 1, this.v);
+  }
+
+  get isLeftEdge() {
+    return this.h === 1;
+  }
+
+  get isRightEdge() {
+    return this.h === this.grid.divisions;
+  }
+
+  get isTopEdge() {
+    return this.v === 1;
+  }
+
+  get isBottomEdge() {
+    return this.v === this.grid.divisions;
   }
 
   get position() {
