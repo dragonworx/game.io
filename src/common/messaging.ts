@@ -1,10 +1,9 @@
-export interface Message<T> {
+export interface Message {
   clientId: string;
   eventName: string;
-  payload?: T;
+  payload?: string | number | boolean | {};
 }
 
-// sent by client
 export enum Protocol {
   UDPConnect = '_udpConnect',
   SocketConnect = '_socketConnect',
@@ -20,21 +19,20 @@ export enum Protocol {
   ClientConnected = '_clientConnected',
 }
 
-// sent by client
-export enum ClientEvents {
+export enum ClientSocketEvents {
   SocketDebug = 'socketDebug',
-  UDPPing = 'udpPing',
   SocketPing = 'socketPing',
   SocketPlayerJoin = 'socketPlayerJoin',
   SocketPlayerInput = 'socketPlayerInput',
   SocketRequestGameState = 'socketRequestGameState',
 }
 
-// sent by server
-export enum ServerEvents {
-  UDPInit = 'udpInit',
+export enum ClientUDPEvents {
+  UDPPing = 'udpPing',
+}
+
+export enum ServerSocketEvents {
   SocketInit = 'socketInit',
-  UDPPong = 'udpPong',
   SocketPong = 'socketPong',
   SocketInitConnection = 'socketInitConnection',
   SocketPlayerJoined = 'socketPlayerJoined',
@@ -43,6 +41,11 @@ export enum ServerEvents {
   SocketGameInit = 'socketGameInit',
   SocketGameStart = 'socketGameStart',
   SocketRespondGameState = 'socketRespondGameState',
-  UDPUpdate = 'updUpdate',
   SocketReload = 'socketReload',
+}
+
+export enum ServerUDPEvents {
+  UDPInit = 'udpInit',
+  UDPPong = 'udpPong',
+  UDPUpdate = 'updUpdate',
 }

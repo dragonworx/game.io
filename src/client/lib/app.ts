@@ -3,8 +3,10 @@ import { Graphics } from './graphics';
 import {
   Protocol,
   Message,
-  ServerEvents,
-  ClientEvents,
+  ServerSocketEvents,
+  ClientSocketEvents,
+  ServerUDPEvents,
+  ClientUDPEvents,
 } from '../../common/messaging';
 import { PlayerNameInput } from './components/playerNameInput';
 import { ClientGame } from './game';
@@ -20,11 +22,11 @@ import {
 } from '../../common';
 
 const excludeLogUDPMessages: string[] = [
-  ServerEvents.UDPPong,
-  ServerEvents.UDPUpdate,
+  ServerUDPEvents.UDPPong,
+  ServerUDPEvents.UDPUpdate,
 ];
 
-const excludeLogSocketMessages: string[] = [ServerEvents.SocketPong];
+const excludeLogSocketMessages: string[] = [ServerSocketEvents.SocketPong];
 
 export class ClientApp {
   io: ClientIO;
@@ -37,29 +39,36 @@ export class ClientApp {
   constructor() {
     const io = (this.io = new ClientIO());
 
+    // protocol
     io.on(Protocol.Connected, this.onConnected);
     io.on(Protocol.UDPMessage, this.onUDPMessage);
     io.on(Protocol.SocketMessage, this.onSocketMessage);
 
-    io.on(ServerEvents.UDPInit, this.onUDPInit);
-    io.on(ServerEvents.SocketInit, this.onSocketInit);
-    io.on(ServerEvents.SocketInitConnection, this.onSocketInitConnection);
-    io.on(ServerEvents.UDPPong, this.onUDPPong);
-    io.on(ServerEvents.SocketPong, this.onSocketPong);
-    io.on(ServerEvents.SocketPlayerJoined, this.onSocketPlayerJoined);
+    // udp
+    io.on(ServerUDPEvents.UDPInit, this.onUDPInit);
+    io.on(ServerUDPEvents.UDPPong, this.onUDPPong);
+    io.on(ServerUDPEvents.UDPUpdate, this.onUDPUpdate);
+
+    // socket
+    io.on(ServerSocketEvents.SocketInit, this.onSocketInit);
+    io.on(ServerSocketEvents.SocketInitConnection, this.onSocketInitConnection);
+    io.on(ServerSocketEvents.SocketPong, this.onSocketPong);
+    io.on(ServerSocketEvents.SocketPlayerJoined, this.onSocketPlayerJoined);
     io.on(
-      ServerEvents.SocketPlayerDisconnected,
+      ServerSocketEvents.SocketPlayerDisconnected,
       this.onSocketPlayerDisconnected,
     );
     io.on(
-      ServerEvents.SocketPlayerInitialPositions,
+      ServerSocketEvents.SocketPlayerInitialPositions,
       this.onSocketPlayerInitialPositions,
     );
-    io.on(ServerEvents.SocketGameInit, this.onSocketGameInit);
-    io.on(ServerEvents.SocketGameStart, this.onSocketGameStart);
-    io.on(ServerEvents.SocketRespondGameState, this.onSocketRespondGameState);
-    io.on(ServerEvents.UDPUpdate, this.onUDPUpdate);
-    io.on(ServerEvents.SocketReload, this.onSocketReload);
+    io.on(ServerSocketEvents.SocketGameInit, this.onSocketGameInit);
+    io.on(ServerSocketEvents.SocketGameStart, this.onSocketGameStart);
+    io.on(
+      ServerSocketEvents.SocketRespondGameState,
+      this.onSocketRespondGameState,
+    );
+    io.on(ServerSocketEvents.SocketReload, this.onSocketReload);
 
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
@@ -82,7 +91,7 @@ export class ClientApp {
     )! as HTMLSelectElement;
     const button = debug.querySelector('button')! as HTMLButtonElement;
     button.onclick = () => {
-      this.io.messageSocket(ClientEvents.SocketDebug, select.value);
+      this.io.messageSocket(ClientSocketEvents.SocketDebug, select.value);
     };
   }
 
@@ -91,7 +100,7 @@ export class ClientApp {
       this.game.initGridView();
       document.querySelector('#main header')!.classList.add('expanded');
       new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
-      this.io.messageSocket(ClientEvents.SocketRequestGameState);
+      this.io.messageSocket(ClientSocketEvents.SocketRequestGameState);
     });
   }
 
@@ -107,14 +116,14 @@ export class ClientApp {
     document.querySelector('#clientId span')!.innerHTML = this.io.clientId;
   };
 
-  onUDPMessage = <T>(message: Message<T>) => {
+  onUDPMessage = (message: Message) => {
     const { eventName, payload } = message;
     if (!excludeLogUDPMessages.includes(eventName)) {
       console.debug('onUDPMessage:', eventName, payload);
     }
   };
 
-  onSocketMessage = <T>(message: Message<T>) => {
+  onSocketMessage = (message: Message) => {
     const { eventName, payload } = message;
     if (!excludeLogSocketMessages.includes(eventName)) {
       console.debug('onSocketMessage:', eventName, payload);
@@ -128,7 +137,7 @@ export class ClientApp {
 
   startUDPPing() {
     this.udpPing = startPing();
-    this.io.messageUDP(ClientEvents.UDPPing);
+    this.io.messageUDP(ClientUDPEvents.UDPPing);
   }
 
   onSocketInit = () => {
@@ -138,7 +147,7 @@ export class ClientApp {
 
   startSocketPing() {
     this.socketPing = startPing();
-    this.io.messageSocket(ClientEvents.SocketPing);
+    this.io.messageSocket(ClientSocketEvents.SocketPing);
   }
 
   onUDPPong = () => {
@@ -167,7 +176,7 @@ export class ClientApp {
     const header = document.querySelector('#main header')!;
     header.classList.remove('expanded');
     header.classList.add('collapsed');
-    this.io.messageSocket(ClientEvents.SocketPlayerJoin, playerName);
+    this.io.messageSocket(ClientSocketEvents.SocketPlayerJoin, playerName);
   };
 
   onSocketPlayerJoined = (info: PlayerInfo) => {

@@ -7,7 +7,7 @@ import {
 import { Graphics } from './graphics';
 import { ClientPlayer } from './player';
 import { Alert } from './components/alert';
-import { ClientEvents } from '../../common/messaging';
+import { ClientSocketEvents } from '../../common/messaging';
 import { Grid } from '../../common/grid';
 import { GridView } from './gridView';
 import { ClientIO } from './io';
@@ -134,7 +134,7 @@ export class ClientGame {
     const { code } = e;
     const numericCode = this.getInputNumericCode(code);
     if (numericCode !== -1) {
-      this.io.messageUDP(ClientEvents.SocketPlayerInput, numericCode);
+      this.io.messageUDP(ClientSocketEvents.SocketPlayerInput, numericCode);
     }
   };
 

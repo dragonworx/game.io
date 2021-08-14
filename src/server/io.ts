@@ -6,10 +6,12 @@ import geckos, {
 } from '@geckos.io/server';
 import EventEmitter from 'eventemitter3';
 import {
-  ClientEvents,
+  ClientSocketEvents,
+  ClientUDPEvents,
   Message,
   Protocol,
-  ServerEvents,
+  ServerSocketEvents,
+  ServerUDPEvents,
 } from '../common/messaging';
 import { Client } from './client';
 import { debug, logger, stringify } from './log';
@@ -58,9 +60,9 @@ export class ServerIO extends EventEmitter {
       this.registerClient(String(clientId), channel);
     });
     channel.on(Protocol.UDPMessage, (data: Data) => {
-      const message = data as Message<any>;
+      const message = data as Message;
       const { clientId, eventName, payload } = message;
-      if (eventName !== ClientEvents.UDPPing) {
+      if (eventName !== ClientUDPEvents.UDPPing) {
         logger
           .bold()
           .color('magenta')
@@ -95,10 +97,10 @@ export class ServerIO extends EventEmitter {
         }
       });
     });
-    socket.on(Protocol.SocketMessage, (data: Message<any>) => {
-      const message = data as Message<any>;
+    socket.on(Protocol.SocketMessage, (data: Message) => {
+      const message = data as Message;
       const { clientId, eventName, payload } = message;
-      if (eventName !== ClientEvents.SocketPing) {
+      if (eventName !== ClientSocketEvents.SocketPing) {
         logger
           .bold()
           .color('magenta')
@@ -127,11 +129,11 @@ export class ServerIO extends EventEmitter {
     }
   }
 
-  broadcastSocket<T>(eventName: ServerEvents, payload?: T) {
+  broadcastSocket<T>(eventName: ServerSocketEvents, payload?: T) {
     this.clients.forEach(client => client.messageSocket(eventName, payload));
   }
 
-  broadcastUDP<T>(eventName: ServerEvents, payload?: T) {
+  broadcastUDP<T>(eventName: ServerUDPEvents, payload?: T) {
     this.clients.forEach(client => client.messageUDP(eventName, payload));
   }
 

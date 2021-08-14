@@ -3,7 +3,13 @@ import { ServerIO } from './io';
 import { Client } from './client';
 import { debug } from './log';
 import { ServerGame } from './game';
-import { Protocol, ServerEvents, ClientEvents } from '../common/messaging';
+import {
+  Protocol,
+  ServerSocketEvents,
+  ClientSocketEvents,
+  ClientUDPEvents,
+  ServerUDPEvents,
+} from '../common/messaging';
 
 export class ServerApp {
   io: ServerIO;
@@ -22,12 +28,15 @@ export class ServerApp {
     io.on(Protocol.ClientConnected, this.onClientConnected);
 
     // handle client events
-    io.on(ClientEvents.SocketDebug, this.onSocketDebug);
-    io.on(ClientEvents.UDPPing, this.onUDPPing);
-    io.on(ClientEvents.SocketPing, this.onSocketPing);
-    io.on(ClientEvents.SocketPlayerJoin, this.onSocketPlayerJoin);
-    io.on(ClientEvents.SocketPlayerInput, this.onSocketPlayerInput);
-    io.on(ClientEvents.SocketRequestGameState, this.onSocketRequestGameState);
+    io.on(ClientSocketEvents.SocketDebug, this.onSocketDebug);
+    io.on(ClientUDPEvents.UDPPing, this.onUDPPing);
+    io.on(ClientSocketEvents.SocketPing, this.onSocketPing);
+    io.on(ClientSocketEvents.SocketPlayerJoin, this.onSocketPlayerJoin);
+    io.on(ClientSocketEvents.SocketPlayerInput, this.onSocketPlayerInput);
+    io.on(
+      ClientSocketEvents.SocketRequestGameState,
+      this.onSocketRequestGameState,
+    );
 
     io.listen();
   }
@@ -57,7 +66,10 @@ export class ServerApp {
   onSocketDisconnect = (clientId: string) => {
     debug('onSocketDisconnect.Client:', clientId);
     this.game.removePlayer(clientId);
-    this.io.broadcastSocket(ServerEvents.SocketPlayerDisconnected, clientId);
+    this.io.broadcastSocket(
+      ServerSocketEvents.SocketPlayerDisconnected,
+      clientId,
+    );
   };
 
   onClientConnected = (client: Client) => {
@@ -66,17 +78,20 @@ export class ServerApp {
       .bgColor('green')
       .log(`onClientConnected: ${client.id}`);
     this.game.logGameState();
-    client.messageUDP(ServerEvents.UDPInit);
-    client.messageSocket(ServerEvents.SocketInit);
-    client.messageSocket(ServerEvents.SocketInitConnection, this.game.status);
+    client.messageUDP(ServerUDPEvents.UDPInit);
+    client.messageSocket(ServerSocketEvents.SocketInit);
+    client.messageSocket(
+      ServerSocketEvents.SocketInitConnection,
+      this.game.status,
+    );
   };
 
   onUDPPing = (client: Client) => {
-    client.messageUDP(ServerEvents.UDPPong);
+    client.messageUDP(ServerUDPEvents.UDPPong);
   };
 
   onSocketPing = (client: Client) => {
-    client.messageSocket(ServerEvents.SocketPong);
+    client.messageSocket(ServerSocketEvents.SocketPong);
   };
 
   onSocketPlayerJoin = (client: Client, playerName: string) => {
@@ -91,7 +106,7 @@ export class ServerApp {
 
   onSocketRequestGameState = (client: Client) => {
     client.messageSocket(
-      ServerEvents.SocketRespondGameState,
+      ServerSocketEvents.SocketRespondGameState,
       this.game.getGameState(),
     );
   };

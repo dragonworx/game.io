@@ -1,13 +1,18 @@
 import { ServerChannel, Socket } from './io';
-import { Message, Protocol, ServerEvents } from '../common/messaging';
+import {
+  Message,
+  Protocol,
+  ServerSocketEvents,
+  ServerUDPEvents,
+} from '../common/messaging';
 import { logger, stringify } from './log';
 
 const excludeLogUDPMessages: string[] = [
-  ServerEvents.UDPPong,
-  ServerEvents.UDPUpdate,
+  ServerUDPEvents.UDPPong,
+  ServerUDPEvents.UDPUpdate,
 ];
 
-const excludeLogSocketMessages: string[] = [ServerEvents.SocketPong];
+const excludeLogSocketMessages: string[] = [ServerSocketEvents.SocketPong];
 
 export class Client {
   id: string;
@@ -22,7 +27,7 @@ export class Client {
     return !!this.udp && !!this.socket;
   }
 
-  messageUDP<T>(eventName: ServerEvents, payload?: T) {
+  messageUDP<T>(eventName: ServerUDPEvents, payload?: T) {
     if (!excludeLogUDPMessages.includes(eventName)) {
       logger
         .bold()
@@ -34,10 +39,10 @@ export class Client {
       clientId: this.id,
       eventName,
       payload,
-    } as Message<any>);
+    } as Message);
   }
 
-  messageSocket<T>(eventName: ServerEvents, payload?: T) {
+  messageSocket<T>(eventName: ServerSocketEvents, payload?: T) {
     if (!excludeLogSocketMessages.includes(eventName)) {
       logger
         .bold()
@@ -49,6 +54,6 @@ export class Client {
       clientId: this.id,
       eventName,
       payload,
-    } as Message<any>);
+    } as Message);
   }
 }

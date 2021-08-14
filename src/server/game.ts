@@ -9,7 +9,7 @@ import {
   PlayerPositionInfo,
 } from '../common';
 import { Grid } from '../common/grid';
-import { ServerEvents } from '../common/messaging';
+import { ServerSocketEvents, ServerUDPEvents } from '../common/messaging';
 import { Client } from './client';
 import { ServerIO } from './io';
 import { ServerPlayer } from './player';
@@ -33,7 +33,7 @@ export class ServerGame {
     this.players = [];
     clearInterval(this.timer);
     delete this.timer;
-    this.io.broadcastSocket(ServerEvents.SocketReload);
+    this.io.broadcastSocket(ServerSocketEvents.SocketReload);
   }
 
   logGameState() {
@@ -44,11 +44,11 @@ export class ServerGame {
     const { io, players, grid } = this;
     const player = new ServerPlayer(grid, client, playerName);
     this.players.push(player);
-    io.broadcastSocket(ServerEvents.SocketPlayerJoined, player.info);
+    io.broadcastSocket(ServerSocketEvents.SocketPlayerJoined, player.info);
 
     const playerPositionInfo = this.distributePlayers();
     io.broadcastSocket(
-      ServerEvents.SocketPlayerInitialPositions,
+      ServerSocketEvents.SocketPlayerInitialPositions,
       playerPositionInfo,
     );
 
@@ -143,20 +143,20 @@ export class ServerGame {
   init() {
     const { io } = this;
     this.players.forEach(player => player.gameInit());
-    io.broadcastSocket(ServerEvents.SocketGameInit);
+    io.broadcastSocket(ServerSocketEvents.SocketGameInit);
   }
 
   start() {
     const { players, io } = this;
     this.status = GameStatus.Running;
     players.forEach(player => player.gameStart());
-    io.broadcastSocket(ServerEvents.SocketGameStart);
+    io.broadcastSocket(ServerSocketEvents.SocketGameStart);
     this.timer = setInterval(this.update, this.fpsInterval);
   }
 
   update = (_time: number) => {
     const { players, io } = this;
     players.forEach(player => player.update());
-    io.broadcastUDP(ServerEvents.UDPUpdate, this.getGameState());
+    io.broadcastUDP(ServerUDPEvents.UDPUpdate, this.getGameState());
   };
 }
