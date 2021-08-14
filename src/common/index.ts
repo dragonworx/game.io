@@ -17,6 +17,10 @@ export enum GameStatus {
   Over = 3,
 }
 
+export const gameStatusToString = (status: GameStatus) => {
+  return ['Unconnected', 'Pre-Game', 'Running', 'Over'][status];
+};
+
 export interface GameState {
   s: GameStatus;
   p: PlayerPositionInfo[];

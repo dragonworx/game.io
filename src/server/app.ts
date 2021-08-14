@@ -48,6 +48,8 @@ export class ServerApp {
       this.game.logGameState();
     } else if (cmd === 'reset') {
       this.game.reset();
+    } else if (cmd === 'stop') {
+      this.game.stop();
     }
   };
 

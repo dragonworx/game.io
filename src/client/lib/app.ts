@@ -35,6 +35,7 @@ export class ClientApp {
   udpPing?: Ping;
   socketPing?: Ping;
   game: ClientGame;
+  enableLatencyCheck: boolean = true;
 
   constructor() {
     const io = (this.io = new ClientIO());
@@ -64,6 +65,7 @@ export class ClientApp {
     );
     io.on(ServerSocketEvents.SocketGameInit, this.onSocketGameInit);
     io.on(ServerSocketEvents.SocketGameStart, this.onSocketGameStart);
+    io.on(ServerSocketEvents.SocketGameStop, this.onSocketGameStop);
     io.on(
       ServerSocketEvents.SocketRespondGameState,
       this.onSocketRespondGameState,
@@ -82,16 +84,37 @@ export class ClientApp {
     );
 
     this.initDebug();
+    this.initLatencySwitch();
   }
 
   initDebug() {
     const debug = document.querySelector('#debug')!;
+    let isAdmin = false;
+    try {
+      isAdmin = !!window.localStorage.getItem('game_admin');
+    } catch (e) {}
+    if (!isAdmin) {
+      debug.parentElement?.removeChild(debug);
+      return;
+    }
+    debug.classList.add('visible');
     const select = document.querySelector(
       '#debug select',
     )! as HTMLSelectElement;
     const button = debug.querySelector('button')! as HTMLButtonElement;
     button.onclick = () => {
       this.io.messageSocket(ClientSocketEvents.SocketDebug, select.value);
+    };
+  }
+
+  initLatencySwitch() {
+    const latency = document.querySelector('#latency')! as HTMLInputElement;
+    latency.onchange = () => {
+      const isEnabled = (this.enableLatencyCheck = !!latency.checked);
+      if (isEnabled) {
+        this.startSocketPing();
+        this.startUDPPing();
+      }
     };
   }
 
@@ -155,7 +178,9 @@ export class ClientApp {
     document.querySelector('#latency-udp span')!.innerHTML = String(
       this.udpPing!.elapsed,
     );
-    setTimeout(() => this.startUDPPing(), PingIntervalMs);
+    if (this.enableLatencyCheck) {
+      setTimeout(() => this.startUDPPing(), PingIntervalMs);
+    }
   };
 
   onSocketPong = () => {
@@ -163,19 +188,17 @@ export class ClientApp {
     document.querySelector('#latency-socket span')!.innerHTML = String(
       this.socketPing!.elapsed,
     );
-    setTimeout(() => this.startSocketPing(), PingIntervalMs);
+    if (this.enableLatencyCheck) {
+      setTimeout(() => this.startSocketPing(), PingIntervalMs);
+    }
   };
 
-  onSocketInitConnection = (gameStatus: GameStatus) => {
-    const { game } = this;
-    game.status = gameStatus;
+  onSocketInitConnection = (status: GameStatus) => {
+    this.game.updateGameStatus(status);
   };
 
   onPlayerNameSubmit = (playerName: string) => {
-    document.querySelector('#playerName')!.classList.add('ready');
-    const header = document.querySelector('#main header')!;
-    header.classList.remove('expanded');
-    header.classList.add('collapsed');
+    this.game.hidePlayerNameInput();
     this.io.messageSocket(ClientSocketEvents.SocketPlayerJoin, playerName);
   };
 
@@ -201,7 +224,12 @@ export class ClientApp {
     this.game.start();
   };
 
+  onSocketGameStop = () => {
+    this.game.stop();
+  };
+
   onSocketRespondGameState = (gameState: GameState) => {
+    this.game.updateGameStatus(gameState.s);
     gameState.p.forEach(info => {
       const player = this.game.newPlayer(info);
       player.setInitialPosition(info);

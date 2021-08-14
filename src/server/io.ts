@@ -66,7 +66,7 @@ export class ServerIO extends EventEmitter {
         logger
           .bold()
           .color('magenta')
-          .log(`--------------\nUDP <- ${clientId}: "${eventName}"`);
+          .log(`<- udp.message.receive <- ${clientId}: "${eventName}"`);
         payload && logger.color('magenta').log(stringify(payload));
       }
       this.emit(Protocol.UDPMessage, message);
@@ -92,6 +92,7 @@ export class ServerIO extends EventEmitter {
             .color('white')
             .bgColor('red')
             .log(`onSocketConnect.disconnect.deleteClient: ${client.id}`);
+          client.dispose();
           clients.delete(client.id);
           this.emit(Protocol.SocketDisconnect, client.id);
         }
@@ -104,7 +105,7 @@ export class ServerIO extends EventEmitter {
         logger
           .bold()
           .color('magenta')
-          .log(`--------------\nTCP <- ${clientId}: "${eventName}"`);
+          .log(`<- socket.message.receive <- ${clientId}: "${eventName}"`);
         payload && logger.color('magenta').log(stringify(payload));
       }
       this.emit(Protocol.SocketMessage, message);

@@ -3,6 +3,7 @@ import {
   GameStatus,
   PlayerInfo,
   PlayerPositionInfo,
+  gameStatusToString,
 } from '../../common';
 import { Graphics } from './graphics';
 import { ClientPlayer } from './player';
@@ -110,6 +111,7 @@ export class ClientGame {
 
   start() {
     console.log('Game start');
+    this.updateGameStatus(GameStatus.Running);
     if (this.userPlayer) {
       this.bindInputEvents();
     }
@@ -117,6 +119,7 @@ export class ClientGame {
 
   stop() {
     console.log('Game stop');
+    this.updateGameStatus(GameStatus.Over);
     if (this.userPlayer) {
       this.unbindInputEvents();
     }
@@ -159,5 +162,26 @@ export class ClientGame {
       const player = this.getPlayer(info.cid);
       player.updateFromState(info);
     });
+  }
+
+  updateGameStatus(status: GameStatus) {
+    document.querySelector('#gameStatus')!.innerHTML =
+      gameStatusToString(status);
+  }
+
+  hidePlayerNameInput() {
+    const playerName = document.querySelector('#playerName')!;
+    const header = document.querySelector('#main header')!;
+    playerName.classList.add('ready');
+    header.classList.remove('expanded');
+    header.classList.add('collapsed');
+  }
+
+  showPlayerNameInput() {
+    const playerName = document.querySelector('#playerName')!;
+    const header = document.querySelector('#main header')!;
+    playerName.classList.remove('ready');
+    header.classList.remove('collapsed');
+    header.classList.add('expanded');
   }
 }

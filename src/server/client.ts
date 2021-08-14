@@ -28,32 +28,57 @@ export class Client {
   }
 
   messageUDP<T>(eventName: ServerUDPEvents, payload?: T) {
-    if (!excludeLogUDPMessages.includes(eventName)) {
+    if (this.udp) {
+      if (!excludeLogUDPMessages.includes(eventName)) {
+        logger
+          .bold()
+          .color('yellow')
+          .log(`-> udp.message.send -> ${this.id}: "${eventName}"`);
+        payload && logger.color('white').log(`> ${stringify(payload)}`);
+      }
+      this.udp.emit(Protocol.UDPMessage, {
+        clientId: this.id,
+        eventName,
+        payload,
+      } as Message);
+    } else {
       logger
         .bold()
-        .color('yellow')
-        .log(`--------------\nUDP -> ${this.id}: "${eventName}"`);
-      payload && logger.color('white').log(stringify(payload));
+        .color('red')
+        .log(`udp.message.dropped: ${this.id}: "${eventName}"`);
     }
-    this.udp!.emit(Protocol.UDPMessage, {
-      clientId: this.id,
-      eventName,
-      payload,
-    } as Message);
   }
 
   messageSocket<T>(eventName: ServerSocketEvents, payload?: T) {
-    if (!excludeLogSocketMessages.includes(eventName)) {
+    if (this.socket) {
+      if (!excludeLogSocketMessages.includes(eventName)) {
+        logger
+          .bold()
+          .color('yellow')
+          .log(`-> socket.message.send -> ${this.id}: "${eventName}"`);
+        payload && logger.color('white').log(`> ${stringify(payload)}`);
+      }
+      this.socket!.emit(Protocol.SocketMessage, {
+        clientId: this.id,
+        eventName,
+        payload,
+      } as Message);
+    } else {
       logger
         .bold()
-        .color('yellow')
-        .log(`--------------\nTCP -> ${this.id}: "${eventName}"`);
-      payload && logger.color('white').log(stringify(payload));
+        .color('red')
+        .log(`socket.message.dropped: ${this.id}: "${eventName}"`);
     }
-    this.socket!.emit(Protocol.SocketMessage, {
-      clientId: this.id,
-      eventName,
-      payload,
-    } as Message);
+  }
+
+  dispose() {
+    if (this.socket) {
+      logger.bold().color('red').log(`dispose.socket: ${this.id}`);
+      this.socket.disconnect();
+    }
+    if (this.udp) {
+      logger.bold().color('red').log(`dispose.udp: ${this.id}`);
+      this.udp.close();
+    }
   }
 }

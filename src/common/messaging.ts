@@ -40,6 +40,7 @@ export enum ServerSocketEvents {
   SocketPlayerDisconnected = 'socketPayerDisconnected',
   SocketGameInit = 'socketGameInit',
   SocketGameStart = 'socketGameStart',
+  SocketGameStop = 'socketGameStop',
   SocketRespondGameState = 'socketRespondGameState',
   SocketReload = 'socketReload',
 }

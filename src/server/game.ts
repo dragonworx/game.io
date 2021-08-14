@@ -19,25 +19,28 @@ export class ServerGame {
   players: ServerPlayer[] = [];
   status: GameStatus = GameStatus.Pre;
   grid: Grid;
-  fpsInterval: number;
   timer?: number;
 
   constructor(io: ServerIO) {
     this.io = io;
     this.grid = new Grid(GridSize, GridDivisions, GridMargin);
-    this.fpsInterval = Math.round(1000 / FPS);
+    const fpsInterval = Math.round(1000 / FPS);
+    setInterval(this.update, fpsInterval);
   }
 
   reset() {
     this.status = GameStatus.Pre;
     this.players = [];
-    clearInterval(this.timer);
-    delete this.timer;
     this.io.broadcastSocket(ServerSocketEvents.SocketReload);
   }
 
   logGameState() {
-    logger.color('white').bgColor('blue').log(stringify(this.getGameState()));
+    logger
+      .color('white')
+      .bgColor('blue')
+      .log(
+        `gameState[${this.players.length}]: ${stringify(this.getGameState())}`,
+      );
   }
 
   newPlayer(client: Client, playerName: string) {
@@ -151,12 +154,19 @@ export class ServerGame {
     this.status = GameStatus.Running;
     players.forEach(player => player.gameStart());
     io.broadcastSocket(ServerSocketEvents.SocketGameStart);
-    this.timer = setInterval(this.update, this.fpsInterval);
   }
 
-  update = (_time: number) => {
-    const { players, io } = this;
-    players.forEach(player => player.update());
-    io.broadcastUDP(ServerUDPEvents.UDPUpdate, this.getGameState());
+  stop() {
+    const { io } = this;
+    this.status = GameStatus.Over;
+    io.broadcastSocket(ServerSocketEvents.SocketGameStop);
+  }
+
+  update = () => {
+    if (this.status !== GameStatus.Running) {
+      return;
+    }
+    this.players.forEach(player => player.update());
+    this.io.broadcastUDP(ServerUDPEvents.UDPUpdate, this.getGameState());
   };
 }
