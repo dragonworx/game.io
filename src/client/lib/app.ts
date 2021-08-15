@@ -23,7 +23,7 @@ import {
 
 const excludeLogUDPMessages: string[] = [
   ServerUDPEvents.UDPPong,
-  ServerUDPEvents.UDPUpdate,
+  ServerUDPEvents.UDPRemoteUpdate,
 ];
 
 const excludeLogSocketMessages: string[] = [ServerSocketEvents.SocketPong];
@@ -32,6 +32,7 @@ export class ClientApp {
   io: ClientIO;
   graphics: Graphics;
   hasConnected: boolean = false;
+  hasInit: boolean = false;
   udpPing?: Ping;
   socketPing?: Ping;
   game: ClientGame;
@@ -48,7 +49,7 @@ export class ClientApp {
     // udp
     io.on(ServerUDPEvents.UDPInit, this.onUDPInit);
     io.on(ServerUDPEvents.UDPPong, this.onUDPPong);
-    io.on(ServerUDPEvents.UDPUpdate, this.onUDPUpdate);
+    io.on(ServerUDPEvents.UDPRemoteUpdate, this.onUDPRemoteUpdate);
 
     // socket
     io.on(ServerSocketEvents.SocketInit, this.onSocketInit);
@@ -238,10 +239,13 @@ export class ClientApp {
       const player = this.game.newPlayer(info);
       player.setInitialPosition(info);
     });
+    this.hasInit = true;
   };
 
-  onUDPUpdate = (gameState: GameState) => {
-    this.game.updateFromState(gameState);
+  onUDPRemoteUpdate = (gameState: GameState) => {
+    if (this.hasInit) {
+      this.game.remoteUpdate(gameState);
+    }
   };
 
   onSocketReload = () => {

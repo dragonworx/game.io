@@ -1,4 +1,7 @@
-export class Grid {
+import { EventEmitter } from 'eventemitter3';
+import { Direction } from '.';
+
+export class Grid extends EventEmitter {
   cells: Cell[][];
   size: number;
   divisions: number;
@@ -9,6 +12,7 @@ export class Grid {
   innerBounds: Bounds;
 
   constructor(size: number, divisions: number, margin: number) {
+    super();
     this.size = size;
     this.divisions = divisions;
     this.margin = margin;
@@ -48,8 +52,13 @@ export class Grid {
     return cellMap.get(key)!;
   }
 
+  breakCell(cell: Cell) {
+    cell.isEmpty = true;
+    this.emit('breakcell', cell);
+  }
+
   forEach(fn: CellIterator) {
-    const { divisions, cellSize } = this;
+    const { divisions } = this;
     for (let v = 0; v < divisions; v += 1) {
       for (let h = 0; h < divisions; h += 1) {
         const cell = this.cells[v][h];
@@ -57,11 +66,38 @@ export class Grid {
       }
     }
   }
+
+  floodFill(cell: Cell, direction: Direction, lastDirection: Direction) {
+    console.log('floodfill!', cell.h, cell.v, direction, lastDirection);
+    this.breakCell(cell);
+    const seedCell = cell.getFloodSeedCell(direction, lastDirection)!;
+    this.floodFillRecursive(seedCell);
+  }
+
+  floodFillRecursive(cell: Cell) {
+    if (cell.isEdge || cell.isEmpty) {
+      return;
+    }
+    if (!cell.isEmpty) {
+      this.breakCell(cell);
+      this.floodFillRecursive(cell.north);
+      this.floodFillRecursive(cell.south);
+      this.floodFillRecursive(cell.east);
+      this.floodFillRecursive(cell.west);
+    }
+  }
 }
 
 export type CellIterator = (cell: Cell) => void;
 
 export const cellKey = (h: number, v: number) => `${h}:${v}`;
+
+export enum AdjacentCell {
+  North = 'north',
+  South = 'south',
+  East = 'east',
+  West = 'west',
+}
 
 export class Cell {
   grid: Grid;
@@ -109,6 +145,12 @@ export class Cell {
     return this.v === this.grid.divisions;
   }
 
+  get isEdge() {
+    return (
+      this.isLeftEdge || this.isRightEdge || this.isTopEdge || this.isBottomEdge
+    );
+  }
+
   get position() {
     return this.bounds.position;
   }
@@ -116,6 +158,31 @@ export class Cell {
   get center() {
     let { centerX: x, centerY: y } = this.bounds;
     return [x, y];
+  }
+
+  getNextCell(direction: Direction) {
+    if (direction === Direction.Up) {
+      if (!this.isTopEdge) return this.north;
+    } else if (direction === Direction.Down) {
+      if (!this.isBottomEdge) return this.south;
+    } else if (direction === Direction.Left) {
+      if (!this.isLeftEdge) return this.west;
+    } else if (direction === Direction.Right) {
+      if (!this.isRightEdge) return this.east;
+    }
+    return null;
+  }
+
+  getFloodSeedCell(direction: Direction, lastDirection: Direction) {
+    if (direction === Direction.Left) {
+      return lastDirection === Direction.Up ? this.south : this.north;
+    } else if (direction === Direction.Right) {
+      return lastDirection === Direction.Up ? this.south : this.north;
+    } else if (direction === Direction.Up) {
+      return lastDirection === Direction.Left ? this.east : this.west;
+    } else if (direction === Direction.Down) {
+      return lastDirection === Direction.Left ? this.east : this.west;
+    }
   }
 }
 

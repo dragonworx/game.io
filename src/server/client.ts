@@ -9,7 +9,7 @@ import { logger, stringify } from './log';
 
 const excludeLogUDPMessages: string[] = [
   ServerUDPEvents.UDPPong,
-  ServerUDPEvents.UDPUpdate,
+  ServerUDPEvents.UDPRemoteUpdate,
 ];
 
 const excludeLogSocketMessages: string[] = [ServerSocketEvents.SocketPong];

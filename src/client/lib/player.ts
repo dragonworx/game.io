@@ -1,4 +1,9 @@
-import { Direction, PlayerInfo, PlayerPositionInfo } from '../../common';
+import {
+  Direction,
+  directionToString,
+  PlayerInfo,
+  PlayerPositionInfo,
+} from '../../common';
 import { Cell, Grid } from '../../common/grid';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { GridView } from './gridView';
@@ -15,6 +20,7 @@ export class ClientPlayer {
   label: PIXI.Text;
   hasAddedToStage: boolean = false;
   direction: Direction = Direction.Stationary;
+  lastDirection: Direction = Direction.Stationary;
   cell: Cell;
 
   constructor(
@@ -45,7 +51,7 @@ export class ClientPlayer {
     sprite.anchor.x = sprite.anchor.y = 0.5;
     label.anchor.x = label.anchor.y = 0.5;
     container.addChild(sprite, label);
-    graphics.addTicker(this.onUpdate);
+    graphics.addTicker(this.onLocalUpdate);
   }
 
   get position() {
@@ -86,20 +92,6 @@ export class ClientPlayer {
     }
   }
 
-  updateFromState(info: PlayerPositionInfo, fps: number) {
-    const { container, grid, gridView } = this;
-    const { h, v, d } = info;
-    gridView.breakCell(this.cell);
-    const cell = (this.cell = grid.getCell(h, v));
-    if (cell.isEmpty) {
-      console.log('!');
-    }
-    const [x, y] = cell.center;
-    this.direction = d;
-    container.x = x;
-    container.y = y;
-  }
-
   setLabelPosition() {
     const { label, direction } = this;
     if (direction === Direction.Down) {
@@ -117,18 +109,54 @@ export class ClientPlayer {
     }
   }
 
-  gameInit() {}
-
-  gameStart() {
+  gameInit() {
     this.label.visible = false;
   }
+
+  gameStart() {}
 
   dispose() {
     this.graphics.removeObject(this.container);
   }
 
-  onUpdate = () => {
+  onLocalUpdate = () => {
     // this is mainly for graphics updates, server has authoritive updates
     this.sprite.rotation += degToRad(1);
   };
+
+  remoteUpdate(info: PlayerPositionInfo) {
+    const debug = `h: ${info.h} v: ${info.v} d: ${directionToString(
+      info.d,
+    )} ld: ${directionToString(info.ld)}`;
+    document.querySelector('#updateDebug')!.innerHTML = debug;
+    // this is the update from the server game state
+    const { container, grid, direction: lastDirection } = this;
+    const { h, v, d: direction, ld } = info;
+    const newCell = grid.getCell(h, v);
+    const prevCell = this.cell;
+    this.cell = newCell;
+    this.lastDirection = ld;
+    this.direction = direction;
+    const [x, y] = newCell.center;
+    container.x = x;
+    container.y = y;
+
+    // animate break for previous cell
+    if (prevCell !== newCell) {
+      grid.breakCell(prevCell);
+    }
+
+    // check for current cut
+    const nextCell = newCell.getNextCell(direction);
+    if (nextCell && nextCell.isEmpty) {
+      console.log('cut!', nextCell.h, nextCell.v);
+      grid.floodFill(newCell, direction, ld);
+    }
+
+    // check for current collision
+    if (newCell.isEmpty) {
+      // todo: local collision, take damage...
+      console.log('collision!', h, v);
+    }
+  }
 }

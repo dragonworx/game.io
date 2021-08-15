@@ -11,7 +11,7 @@ import {
   PlayerPositionInfo,
   Direction,
 } from '../common';
-import { Grid } from '../common/grid';
+import { Cell, Grid } from '../common/grid';
 import { ServerSocketEvents, ServerUDPEvents } from '../common/messaging';
 import { Client } from './client';
 import { ServerIO } from './io';
@@ -177,8 +177,8 @@ export class ServerGame {
       return;
     }
     this.players.forEach(player => player.update());
-    this.io.broadcastUDP(ServerUDPEvents.UDPUpdate, this.getGameState());
-    this.increaseSpeed();
+    this.io.broadcastUDP(ServerUDPEvents.UDPRemoteUpdate, this.getGameState());
+    // this.increaseSpeed();
   };
 
   toggle = () => {

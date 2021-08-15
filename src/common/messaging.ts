@@ -48,5 +48,5 @@ export enum ServerSocketEvents {
 export enum ServerUDPEvents {
   UDPInit = 'udpInit',
   UDPPong = 'udpPong',
-  UDPUpdate = 'updUpdate',
+  UDPRemoteUpdate = 'updRemoteUpdate',
 }

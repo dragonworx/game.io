@@ -165,12 +165,12 @@ export class ClientGame {
     }
   };
 
-  updateFromState(gameState: GameState) {
+  remoteUpdate(gameState: GameState) {
     this.status = gameState.s;
     document.querySelector('#fps')!.innerHTML = `${gameState.f.toFixed(1)}fps`;
     gameState.p.forEach(info => {
       const player = this.getPlayer(info.cid);
-      player.updateFromState(info, gameState.f);
+      player.remoteUpdate(info);
     });
   }
 }

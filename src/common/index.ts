@@ -1,5 +1,5 @@
 export const GridSize = 750;
-export const GridDivisions = 40; // odd numbers work best for initial distribution of players
+export const GridDivisions = 41; // odd numbers work best for initial distribution of players
 export const GridMargin = 20;
 export const PingIntervalMs = 1000;
 export const InitialFPS = 5;
@@ -45,6 +45,9 @@ export enum Direction {
   Down = 4,
 }
 
+export const directionToString = (direction: Direction) =>
+  ['Stationary', 'Left', 'Right', 'Up', 'Down'][direction];
+
 export interface GameState {
   s: GameStatus;
   f: number;
@@ -55,4 +58,5 @@ export interface PlayerPositionInfo extends PlayerInfo {
   h: number;
   v: number;
   d: Direction;
+  ld: Direction;
 }

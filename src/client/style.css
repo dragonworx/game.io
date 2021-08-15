@@ -156,3 +156,10 @@ header.collapsed {
   right: 5px;
   font-size: 20px;
 }
+
+#updateDebug {
+  top: 5px;
+  left: 363px;
+  font-size: 25px;
+  font-family: sans-serif;
+}

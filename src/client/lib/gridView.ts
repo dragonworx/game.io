@@ -15,6 +15,8 @@ export class GridView {
     this.graphics = graphics;
 
     this.cellSpriteMap = new Map();
+
+    grid.on('breakcell', this.onBreakCell);
   }
 
   init() {
@@ -52,10 +54,9 @@ export class GridView {
     });
   }
 
-  breakCell(cell: Cell) {
+  onBreakCell = (cell: Cell) => {
     const { graphics, cellSpriteMap } = this;
     const sprite = cellSpriteMap.get(cell)!;
-    cell.isEmpty = true;
     graphics.ease(
       sprite,
       {
@@ -65,5 +66,5 @@ export class GridView {
       2000,
       'easeOutBack',
     );
-  }
+  };
 }
