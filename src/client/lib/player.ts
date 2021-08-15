@@ -62,7 +62,7 @@ export class ClientPlayer {
   setInitialPosition(info: PlayerPositionInfo) {
     const { hasAddedToStage, graphics, container, grid } = this;
     const { h, v, d } = info;
-    const cell = grid.getCell(h, v);
+    const cell = grid.getCell(h, v)!;
     const [x, y] = cell.center;
     this.cell = cell;
     this.direction = d;
@@ -130,13 +130,13 @@ export class ClientPlayer {
     )} ld: ${directionToString(info.ld)}`;
     document.querySelector('#updateDebug')!.innerHTML = debug;
     // this is the update from the server game state
-    const { container, grid, direction: lastDirection } = this;
-    const { h, v, d: direction, ld } = info;
-    const newCell = grid.getCell(h, v);
+    const { container, grid } = this;
+    const { h, v, d: direction, ld: lastDirection } = info;
+    const newCell = grid.getCell(h, v)!;
     const prevCell = this.cell;
     this.cell = newCell;
-    this.lastDirection = ld;
     this.direction = direction;
+    this.lastDirection = lastDirection;
     const [x, y] = newCell.center;
     container.x = x;
     container.y = y;
@@ -147,11 +147,7 @@ export class ClientPlayer {
     }
 
     // check for current cut
-    const nextCell = newCell.getNextCell(direction);
-    if (nextCell && nextCell.isEmpty) {
-      console.log('cut!', nextCell.h, nextCell.v);
-      grid.floodFill(newCell, direction, ld);
-    }
+    grid.checkForCut(newCell, direction, lastDirection);
 
     // check for current collision
     if (newCell.isEmpty) {

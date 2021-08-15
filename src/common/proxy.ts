@@ -15,7 +15,10 @@ export class GridProxy extends EventEmitter {
     this.cell = grid.cells[0][0];
   }
 
-  setCell(cell: Cell, direction: Direction) {
+  setCell(cell: Cell | null, direction: Direction) {
+    if (cell === null) {
+      return;
+    }
     this.cell = cell;
     this.direction = direction;
   }
@@ -121,12 +124,7 @@ export class GridProxy extends EventEmitter {
   }
 
   checkForCut() {
-    const { direction, lastDirection, cell, grid } = this;
-    const nextCell = cell.getNextCell(direction);
-    if (nextCell && nextCell.isEmpty) {
-      console.log('cut!', nextCell.h, nextCell.v);
-      grid.floodFill(cell, direction, lastDirection);
-    }
+    this.grid.checkForCut(this.cell, this.direction, this.lastDirection);
   }
 
   checkForCollision() {

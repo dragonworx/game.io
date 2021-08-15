@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import { Direction } from '.';
+import { Direction, isHorizontal, isVertical } from '.';
 
 export class Grid extends EventEmitter {
   cells: Cell[][];
@@ -40,14 +40,18 @@ export class Grid extends EventEmitter {
     }
   }
 
-  getCell(h: number, v: number) {
+  getCell(h: number, v: number): Cell | null {
     const { divisions, cellMap } = this;
     let hIndex = h;
     let vIndex = v;
-    if (hIndex < 1) hIndex += divisions;
-    if (hIndex > divisions) hIndex = hIndex - divisions;
-    if (vIndex < 1) vIndex += divisions;
-    if (vIndex > divisions) vIndex = vIndex - divisions;
+    // if (hIndex < 1) hIndex += divisions;
+    // if (hIndex > divisions) hIndex = hIndex - divisions;
+    // if (vIndex < 1) vIndex += divisions;
+    // if (vIndex > divisions) vIndex = vIndex - divisions;
+    if (hIndex < 1) return null;
+    if (hIndex > divisions) return null;
+    if (vIndex < 1) return null;
+    if (vIndex > divisions) return null;
     const key = cellKey(hIndex, vIndex);
     return cellMap.get(key)!;
   }
@@ -67,23 +71,100 @@ export class Grid extends EventEmitter {
     }
   }
 
-  floodFill(cell: Cell, direction: Direction, lastDirection: Direction) {
-    console.log('floodfill!', cell.h, cell.v, direction, lastDirection);
-    this.breakCell(cell);
-    const seedCell = cell.getFloodSeedCell(direction, lastDirection)!;
-    this.floodFillRecursive(seedCell);
+  checkForCut(
+    currentCell: Cell,
+    direction: Direction,
+    lastDirection: Direction,
+  ) {
+    if (isVertical(direction)) {
+      lastDirection === Direction.Right &&
+        this.checkForCutWithCell(
+          currentCell,
+          currentCell.west,
+          direction,
+          lastDirection,
+        );
+      this.checkForCutWithCell(
+        currentCell,
+        currentCell,
+        direction,
+        lastDirection,
+      );
+      lastDirection === Direction.Left &&
+        this.checkForCutWithCell(
+          currentCell,
+          currentCell.east,
+          direction,
+          lastDirection,
+        );
+    } else if (isHorizontal(direction)) {
+      lastDirection === Direction.Down &&
+        this.checkForCutWithCell(
+          currentCell,
+          currentCell.north,
+          direction,
+          lastDirection,
+        );
+      this.checkForCutWithCell(
+        currentCell,
+        currentCell,
+        direction,
+        lastDirection,
+      );
+      lastDirection === Direction.Up &&
+        this.checkForCutWithCell(
+          currentCell,
+          currentCell.south,
+          direction,
+          lastDirection,
+        );
+    }
   }
 
-  floodFillRecursive(cell: Cell) {
-    if (cell.isEdge || cell.isEmpty) {
+  checkForCutWithCell(
+    currentCell: Cell,
+    checkCell: Cell | null,
+    direction: Direction,
+    lastDirection: Direction,
+  ) {
+    if (checkCell === null) {
+      return;
+    }
+    const nextCell = checkCell.getNextCell(direction);
+    if (nextCell && nextCell.isEmpty) {
+      console.log('cut!', nextCell.h, nextCell.v);
+      const cells = this.floodFill(currentCell, direction, lastDirection);
+      const edges = cells.filter(cell => cell.isEdge);
+      if (edges.length) {
+        // hack to stop unknown flood fill bug due to edge case direction combinations
+        cells.forEach(cell => (cell.isEmpty = false));
+      } else {
+        cells.forEach(cell => this.breakCell(cell));
+      }
+    }
+  }
+
+  floodFill(cell: Cell, direction: Direction, lastDirection: Direction) {
+    console.log('floodfill!', cell.h, cell.v, direction, lastDirection);
+    const seedCell = cell.getFloodSeedCell(direction, lastDirection)!;
+    const cells: Cell[] = [];
+    this.breakCell(cell);
+    this.floodFillRecursive(cells, seedCell);
+    return cells;
+  }
+
+  floodFillRecursive(cells: Cell[], cell: Cell | null) {
+    if (cell === null || cell.isEmpty) {
       return;
     }
     if (!cell.isEmpty) {
-      this.breakCell(cell);
-      this.floodFillRecursive(cell.north);
-      this.floodFillRecursive(cell.south);
-      this.floodFillRecursive(cell.east);
-      this.floodFillRecursive(cell.west);
+      // this.breakCell(cell);
+      cell.isEmpty = true;
+      cells.push(cell);
+      this.floodFillRecursive(cells, cell.north);
+      this.floodFillRecursive(cells, cell.south);
+      this.floodFillRecursive(cells, cell.east);
+      this.floodFillRecursive(cells, cell.west);
     }
   }
 }

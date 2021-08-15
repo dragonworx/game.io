@@ -102,19 +102,19 @@ export class ServerGame {
     const rightOffset = right.length === 5 ? 1 : 0;
     top.forEach((player, i) => {
       const h = topInc * (i + 1) + topOffset;
-      player.proxy.setCell(grid.getCell(h, 1), Direction.Down);
+      player.proxy.setCell(grid.getCell(h, 1)!, Direction.Down);
     });
     left.forEach((player, i) => {
       const v = leftInc * (i + 1) + leftOffset;
-      player.proxy.setCell(grid.getCell(1, v), Direction.Right);
+      player.proxy.setCell(grid.getCell(1, v)!, Direction.Right);
     });
     bottom.forEach((player, i) => {
       const h = bottomInc * (i + 1) + bottomOffset;
-      player.proxy.setCell(grid.getCell(h, divisions), Direction.Up);
+      player.proxy.setCell(grid.getCell(h, divisions)!, Direction.Up);
     });
     right.forEach((player, i) => {
       const v = rightInc * (i + 1) + rightOffset;
-      player.proxy.setCell(grid.getCell(divisions, v), Direction.Left);
+      player.proxy.setCell(grid.getCell(divisions, v)!, Direction.Left);
     });
   }
 

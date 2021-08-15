@@ -26,7 +26,7 @@ export class GridView {
     grid.forEach((cell: Cell) => {
       const { h, v } = cell;
       const sprite = new PIXI.Sprite(texture);
-      const [x, y] = grid.getCell(h, v).position;
+      const [x, y] = grid.getCell(h, v)!.position;
       const halfSize = grid.cellSize / 2;
       sprite.x = x + halfSize;
       sprite.y = y + halfSize;

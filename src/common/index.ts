@@ -48,6 +48,12 @@ export enum Direction {
 export const directionToString = (direction: Direction) =>
   ['Stationary', 'Left', 'Right', 'Up', 'Down'][direction];
 
+export const isVertical = (direction: Direction) =>
+  direction === Direction.Up || direction === Direction.Down;
+
+export const isHorizontal = (direction: Direction) =>
+  direction === Direction.Left || direction === Direction.Right;
+
 export interface GameState {
   s: GameStatus;
   f: number;
