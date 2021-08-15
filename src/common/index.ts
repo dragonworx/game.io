@@ -1,10 +1,13 @@
+import { Cell } from './grid';
+
 export const GridSize = 750;
-export const GridDivisions = 41; // odd numbers work best for initial distribution of players
+export const GridDivisions = 70; // odd numbers work best for initial distribution of players
 export const GridMargin = 20;
 export const PingIntervalMs = 1000;
-export const InitialFPS = 5;
+export const InitialFPS = 7;
 export const MAXFPS = 20;
 export const FPSScalar = 1.005;
+export const CollisionDamage = 3;
 
 export interface PlayerInfo {
   cid: string;
@@ -57,12 +60,14 @@ export const isHorizontal = (direction: Direction) =>
 export interface GameState {
   s: GameStatus;
   f: number;
-  p: PlayerPositionInfo[];
+  p: PlayerUpdateInfo[];
 }
 
-export interface PlayerPositionInfo extends PlayerInfo {
+export interface PlayerUpdateInfo extends PlayerInfo {
   h: number;
   v: number;
   d: Direction;
   ld: Direction;
+  s: number;
+  hl: number;
 }

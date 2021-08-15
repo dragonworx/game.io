@@ -1,9 +1,4 @@
-import {
-  Direction,
-  directionToString,
-  PlayerInfo,
-  PlayerPositionInfo,
-} from '../../common';
+import { Direction, PlayerInfo, PlayerUpdateInfo } from '../../common';
 import { Cell, Grid } from '../../common/grid';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { GridView } from './gridView';
@@ -22,6 +17,7 @@ export class ClientPlayer {
   direction: Direction = Direction.Stationary;
   lastDirection: Direction = Direction.Stationary;
   cell: Cell;
+  playerStatusEl: HTMLDivElement;
 
   constructor(
     grid: Grid,
@@ -47,11 +43,13 @@ export class ClientPlayer {
 
     const texture = graphics.textures.get('blade');
     const sprite = (this.sprite = new PIXI.Sprite(texture));
-    sprite.width = sprite.height = 20;
+    sprite.width = sprite.height = grid.cellSize;
     sprite.anchor.x = sprite.anchor.y = 0.5;
     label.anchor.x = label.anchor.y = 0.5;
     container.addChild(sprite, label);
     graphics.addTicker(this.onLocalUpdate);
+
+    this.playerStatusEl = document.querySelector('#playerStatus')!;
   }
 
   get position() {
@@ -59,7 +57,7 @@ export class ClientPlayer {
     return [container.x, container.y];
   }
 
-  setInitialPosition(info: PlayerPositionInfo) {
+  setInitialPosition(info: PlayerUpdateInfo) {
     const { hasAddedToStage, graphics, container, grid } = this;
     const { h, v, d } = info;
     const cell = grid.getCell(h, v)!;
@@ -120,18 +118,21 @@ export class ClientPlayer {
   }
 
   onLocalUpdate = () => {
-    // this is mainly for graphics updates, server has authoritive updates
+    // this is mainly for graphics/animation updates, server has authoritive updates
     this.sprite.rotation += degToRad(1);
   };
 
-  remoteUpdate(info: PlayerPositionInfo) {
-    const debug = `h: ${info.h} v: ${info.v} d: ${directionToString(
-      info.d,
-    )} ld: ${directionToString(info.ld)}`;
-    document.querySelector('#updateDebug')!.innerHTML = debug;
+  remoteUpdate(info: PlayerUpdateInfo) {
     // this is the update from the server game state
     const { container, grid } = this;
-    const { h, v, d: direction, ld: lastDirection } = info;
+    const {
+      h,
+      v,
+      d: direction,
+      ld: lastDirection,
+      s: score,
+      hl: health,
+    } = info;
     const newCell = grid.getCell(h, v)!;
     const prevCell = this.cell;
     this.cell = newCell;
@@ -141,18 +142,30 @@ export class ClientPlayer {
     container.x = x;
     container.y = y;
 
+    this.updatePlayerStatus(score, health);
+
     // animate break for previous cell
     if (prevCell !== newCell) {
-      grid.breakCell(prevCell);
+      grid.breakCell(this.info.cid, prevCell);
     }
-
-    // check for current cut
-    grid.checkForCut(newCell, direction, lastDirection);
 
     // check for current collision
     if (newCell.isEmpty) {
       // todo: local collision, take damage...
       console.log('collision!', h, v);
     }
+
+    // check for current cut
+    grid.checkForCut(this.info.cid, newCell, direction, lastDirection);
+  }
+
+  updatePlayerStatus(score: number, health: number) {
+    const { playerStatusEl } = this;
+    const scoreEl = playerStatusEl.querySelector('.score')!;
+    const healthEl = playerStatusEl.querySelector(
+      '.health-bar',
+    )! as HTMLDivElement;
+    scoreEl.innerHTML = `${score}`;
+    healthEl.style.width = `${health}%`;
   }
 }

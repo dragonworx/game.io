@@ -8,7 +8,7 @@ import {
   InitialFPS,
   MAXFPS,
   FPSScalar,
-  PlayerPositionInfo,
+  PlayerUpdateInfo,
   Direction,
 } from '../common';
 import { Cell, Grid } from '../common/grid';
@@ -59,6 +59,9 @@ export class ServerGame {
   newPlayer(client: Client, playerName: string) {
     const { io, players, grid } = this;
     const player = new ServerPlayer(grid, client, playerName);
+    player.on('dead', () => {
+      io.broadcastSocket(ServerSocketEvents.SocketPlayerDead, client.id);
+    });
     this.players.push(player);
     io.broadcastSocket(ServerSocketEvents.SocketPlayerJoined, player.info);
 
@@ -126,8 +129,8 @@ export class ServerGame {
     };
   }
 
-  getPlayerPositionInfo(): PlayerPositionInfo[] {
-    return this.players.map(player => player.positionInfo);
+  getPlayerPositionInfo(): PlayerUpdateInfo[] {
+    return this.players.map(player => player.updateInfo);
   }
 
   removePlayer(clientId: string) {

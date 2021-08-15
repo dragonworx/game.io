@@ -157,9 +157,31 @@ header.collapsed {
   font-size: 20px;
 }
 
-#updateDebug {
+#playerStatus {
   top: 5px;
   left: 363px;
   font-size: 25px;
-  font-family: sans-serif;
+}
+
+#playerStatus > * {
+  display: inline-block;
+}
+
+#playerStatus .score {
+  color: white;
+}
+
+#playerStatus .health {
+  background-color: red;
+  position: relative;
+  width: 150px;
+  height: 20px;
+  border-radius: 5px;
+}
+
+#playerStatus .health-bar {
+  background-color: green;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
 }

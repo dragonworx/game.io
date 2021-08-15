@@ -1,16 +1,20 @@
 import { EventEmitter } from 'eventemitter3';
-import { Action, Direction } from '.';
+import { Action, CollisionDamage, Direction } from '.';
 import { AdjacentCell, Cell, Grid } from './grid';
 
 export class GridProxy extends EventEmitter {
+  clientId: string;
   grid: Grid;
   cell: Cell;
   direction: Direction = Direction.Stationary;
   lastDirection: Direction = Direction.Stationary;
   action?: Action;
+  health: number = 100;
+  score: number = 0;
 
-  constructor(grid: Grid) {
+  constructor(clientId: string, grid: Grid) {
     super();
+    this.clientId = clientId;
     this.grid = grid;
     this.cell = grid.cells[0][0];
   }
@@ -40,10 +44,11 @@ export class GridProxy extends EventEmitter {
   }
 
   update() {
-    const { direction: lastDirection } = this;
+    const { direction: lastDirection, cell, grid } = this;
 
     this.processInput();
     if (this.moveToNextCell()) {
+      grid.breakCell(this.clientId, cell);
       this.checkForCollision();
       this.checkForCut();
     }
@@ -109,13 +114,11 @@ export class GridProxy extends EventEmitter {
     adjacentKey: AdjacentCell,
     isEdge: boolean,
   ) {
-    const { direction, cell, grid } = this;
+    const { direction, cell } = this;
     if (direction === checkDirection) {
       if (isEdge) {
         this.setCell(cell, Direction.Stationary);
       } else {
-        const prevCell = cell;
-        grid.breakCell(prevCell);
         this.setCell(cell[adjacentKey], direction);
         return true;
       }
@@ -124,13 +127,22 @@ export class GridProxy extends EventEmitter {
   }
 
   checkForCut() {
-    this.grid.checkForCut(this.cell, this.direction, this.lastDirection);
+    this.grid.checkForCut(
+      this.clientId,
+      this.cell,
+      this.direction,
+      this.lastDirection,
+    );
   }
 
   checkForCollision() {
     const { cell } = this;
     if (cell.isEmpty) {
       console.log('collision!', cell.h, cell.v);
+      this.health = Math.max(0, this.health - CollisionDamage);
+      if (this.health === 0) {
+        this.emit('dead', this);
+      }
     }
   }
 }

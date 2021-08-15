@@ -18,7 +18,7 @@ import {
   GameState,
   PingIntervalMs,
   PlayerInfo,
-  PlayerPositionInfo,
+  PlayerUpdateInfo,
 } from '../../common';
 
 const excludeLogUDPMessages: string[] = [
@@ -72,6 +72,7 @@ export class ClientApp {
       this.onSocketRespondGameState,
     );
     io.on(ServerSocketEvents.SocketReload, this.onSocketReload);
+    io.on(ServerSocketEvents.SocketPlayerDead, this.onSocketPlayerDead);
 
     const graphicsSize = GridSize + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
@@ -215,10 +216,8 @@ export class ClientApp {
     this.game.removePlayer(clientId);
   };
 
-  onSocketPlayerInitialPositions = (
-    playerPositionInfo: PlayerPositionInfo[],
-  ) => {
-    this.game.updatePlayerInitialPositions(playerPositionInfo);
+  onSocketPlayerInitialPositions = (info: PlayerUpdateInfo[]) => {
+    this.game.updatePlayerInitialPositions(info);
   };
 
   onSocketGameInit = () => {
@@ -250,5 +249,9 @@ export class ClientApp {
 
   onSocketReload = () => {
     window.location.reload();
+  };
+
+  onSocketPlayerDead = (clientId: string) => {
+    console.log('DEAD!', clientId);
   };
 }

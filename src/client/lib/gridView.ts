@@ -54,7 +54,7 @@ export class GridView {
     });
   }
 
-  onBreakCell = (cell: Cell) => {
+  onBreakCell = (_clientId: string, cell: Cell) => {
     const { graphics, cellSpriteMap } = this;
     const sprite = cellSpriteMap.get(cell)!;
     graphics.ease(

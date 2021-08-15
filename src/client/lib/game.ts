@@ -2,7 +2,7 @@ import {
   GameState,
   GameStatus,
   PlayerInfo,
-  PlayerPositionInfo,
+  PlayerUpdateInfo,
   gameStatusToString,
   CodeToAction,
 } from '../../common';
@@ -79,8 +79,8 @@ export class ClientGame {
     this.gridView.init();
   }
 
-  updatePlayerInitialPositions(playerPositionInfo: PlayerPositionInfo[]) {
-    playerPositionInfo.forEach(info => {
+  updatePlayerInitialPositions(info: PlayerUpdateInfo[]) {
+    info.forEach(info => {
       const player = this.getPlayer(info.cid);
       player.setInitialPosition(info);
     });

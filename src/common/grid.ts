@@ -44,10 +44,6 @@ export class Grid extends EventEmitter {
     const { divisions, cellMap } = this;
     let hIndex = h;
     let vIndex = v;
-    // if (hIndex < 1) hIndex += divisions;
-    // if (hIndex > divisions) hIndex = hIndex - divisions;
-    // if (vIndex < 1) vIndex += divisions;
-    // if (vIndex > divisions) vIndex = vIndex - divisions;
     if (hIndex < 1) return null;
     if (hIndex > divisions) return null;
     if (vIndex < 1) return null;
@@ -56,9 +52,9 @@ export class Grid extends EventEmitter {
     return cellMap.get(key)!;
   }
 
-  breakCell(cell: Cell) {
+  breakCell(clientId: string, cell: Cell) {
     cell.isEmpty = true;
-    this.emit('breakcell', cell);
+    this.emit('breakcell', clientId, cell);
   }
 
   forEach(fn: CellIterator) {
@@ -72,6 +68,7 @@ export class Grid extends EventEmitter {
   }
 
   checkForCut(
+    clientId: string,
     currentCell: Cell,
     direction: Direction,
     lastDirection: Direction,
@@ -79,12 +76,14 @@ export class Grid extends EventEmitter {
     if (isVertical(direction)) {
       lastDirection === Direction.Right &&
         this.checkForCutWithCell(
+          clientId,
           currentCell,
           currentCell.west,
           direction,
           lastDirection,
         );
       this.checkForCutWithCell(
+        clientId,
         currentCell,
         currentCell,
         direction,
@@ -92,6 +91,7 @@ export class Grid extends EventEmitter {
       );
       lastDirection === Direction.Left &&
         this.checkForCutWithCell(
+          clientId,
           currentCell,
           currentCell.east,
           direction,
@@ -100,12 +100,14 @@ export class Grid extends EventEmitter {
     } else if (isHorizontal(direction)) {
       lastDirection === Direction.Down &&
         this.checkForCutWithCell(
+          clientId,
           currentCell,
           currentCell.north,
           direction,
           lastDirection,
         );
       this.checkForCutWithCell(
+        clientId,
         currentCell,
         currentCell,
         direction,
@@ -113,6 +115,7 @@ export class Grid extends EventEmitter {
       );
       lastDirection === Direction.Up &&
         this.checkForCutWithCell(
+          clientId,
           currentCell,
           currentCell.south,
           direction,
@@ -122,6 +125,7 @@ export class Grid extends EventEmitter {
   }
 
   checkForCutWithCell(
+    clientId: string,
     currentCell: Cell,
     checkCell: Cell | null,
     direction: Direction,
@@ -132,23 +136,31 @@ export class Grid extends EventEmitter {
     }
     const nextCell = checkCell.getNextCell(direction);
     if (nextCell && nextCell.isEmpty) {
-      console.log('cut!', nextCell.h, nextCell.v);
-      const cells = this.floodFill(currentCell, direction, lastDirection);
+      const cells = this.floodFill(
+        clientId,
+        currentCell,
+        direction,
+        lastDirection,
+      );
       const edges = cells.filter(cell => cell.isEdge);
       if (edges.length) {
         // hack to stop unknown flood fill bug due to edge case direction combinations
         cells.forEach(cell => (cell.isEmpty = false));
       } else {
-        cells.forEach(cell => this.breakCell(cell));
+        cells.forEach(cell => this.breakCell(clientId, cell));
       }
     }
   }
 
-  floodFill(cell: Cell, direction: Direction, lastDirection: Direction) {
-    console.log('floodfill!', cell.h, cell.v, direction, lastDirection);
+  floodFill(
+    clientId: string,
+    cell: Cell,
+    direction: Direction,
+    lastDirection: Direction,
+  ) {
     const seedCell = cell.getFloodSeedCell(direction, lastDirection)!;
     const cells: Cell[] = [];
-    this.breakCell(cell);
+    this.breakCell(clientId, cell);
     this.floodFillRecursive(cells, seedCell);
     return cells;
   }
