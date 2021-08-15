@@ -72,9 +72,10 @@ export class ClientApp {
       this.onSocketRespondGameState,
     );
     io.on(ServerSocketEvents.SocketReload, this.onSocketReload);
-    io.on(ServerSocketEvents.SocketPlayerDead, this.onSocketPlayerDead);
+    io.on(ServerSocketEvents.SocketGameOver, this.onSocketGameOver);
 
-    const graphicsSize = GridSize + GridMargin * 2;
+    const cellSize = Math.round(GridSize / GridDivisions);
+    const graphicsSize = cellSize * GridDivisions + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
 
     this.game = new ClientGame(
@@ -251,7 +252,7 @@ export class ClientApp {
     window.location.reload();
   };
 
-  onSocketPlayerDead = (clientId: string) => {
-    console.log('DEAD!', clientId);
+  onSocketGameOver = (playerRank: PlayerUpdateInfo[]) => {
+    this.game.showGameOver(playerRank);
   };
 }

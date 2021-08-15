@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import { Action, CollisionDamage, Direction } from '.';
+import { Action, BreakCellPoints, CollisionDamage, Direction } from '.';
 import { AdjacentCell, Cell, Grid } from './grid';
 
 export class GridProxy extends EventEmitter {
@@ -17,6 +17,17 @@ export class GridProxy extends EventEmitter {
     this.clientId = clientId;
     this.grid = grid;
     this.cell = grid.cells[0][0];
+    grid.on('breakcell', this.onBreakCell);
+  }
+
+  get isDead() {
+    return this.health === 0;
+  }
+
+  init() {
+    this.score = 0;
+    this.health = 100;
+    delete this.action;
   }
 
   setCell(cell: Cell | null, direction: Direction) {
@@ -145,4 +156,10 @@ export class GridProxy extends EventEmitter {
       }
     }
   }
+
+  onBreakCell = (clientId: string, cell: Cell) => {
+    if (clientId === this.clientId) {
+      this.score += BreakCellPoints;
+    }
+  };
 }

@@ -18,6 +18,7 @@ export class ClientPlayer {
   lastDirection: Direction = Direction.Stationary;
   cell: Cell;
   playerStatusEl: HTMLDivElement;
+  isDead: boolean = false;
 
   constructor(
     grid: Grid,
@@ -124,7 +125,10 @@ export class ClientPlayer {
 
   remoteUpdate(info: PlayerUpdateInfo) {
     // this is the update from the server game state
-    const { container, grid } = this;
+    const { container, grid, isDead } = this;
+    if (isDead) {
+      return;
+    }
     const {
       h,
       v,
@@ -143,6 +147,10 @@ export class ClientPlayer {
     container.y = y;
 
     this.updatePlayerStatus(score, health);
+
+    if (health === 0 && !this.isDead) {
+      this.die();
+    }
 
     // animate break for previous cell
     if (prevCell !== newCell) {
@@ -167,5 +175,10 @@ export class ClientPlayer {
     )! as HTMLDivElement;
     scoreEl.innerHTML = `${score}`;
     healthEl.style.width = `${health}%`;
+  }
+
+  die() {
+    this.isDead = true;
+    console.log('DEAD!');
   }
 }

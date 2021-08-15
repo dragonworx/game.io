@@ -43,7 +43,9 @@ export class ServerPlayer extends EventEmitter {
     this.proxy.action = action;
   }
 
-  gameInit() {}
+  gameInit() {
+    this.proxy.init();
+  }
 
   gameStart() {}
 

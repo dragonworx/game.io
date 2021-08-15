@@ -40,6 +40,12 @@ export class Grid extends EventEmitter {
     }
   }
 
+  init() {
+    this.forEach((cell: Cell) => {
+      cell.isEmpty = false;
+    });
+  }
+
   getCell(h: number, v: number): Cell | null {
     const { divisions, cellMap } = this;
     let hIndex = h;

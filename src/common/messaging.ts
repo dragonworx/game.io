@@ -43,7 +43,7 @@ export enum ServerSocketEvents {
   SocketGameStop = 'socketGameStop',
   SocketRespondGameState = 'socketRespondGameState',
   SocketReload = 'socketReload',
-  SocketPlayerDead = 'socketPlayerDead',
+  SocketGameOver = 'socketGameOver',
 }
 
 export enum ServerUDPEvents {

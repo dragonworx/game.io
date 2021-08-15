@@ -129,6 +129,7 @@ export class ClientGame {
 
   init() {
     // this.showCountdown();
+    this.grid.init();
     this.players.forEach(player => player.gameInit());
   }
 
@@ -172,5 +173,20 @@ export class ClientGame {
       const player = this.getPlayer(info.cid);
       player.remoteUpdate(info);
     });
+  }
+
+  showGameOver(playerRank: PlayerUpdateInfo[]) {
+    const { graphics, grid } = this;
+    const alert = new Alert(graphics, `Game Over!`);
+    alert.on('shown', () => {
+      alert.hide(grid.innerBounds.centerX, 0);
+    });
+    alert.show();
+    console.log(playerRank);
+  }
+
+  reset() {
+    // this.updateGameStatus(GameStatus.Pre);
+    // this.showPlayerNameInput();
   }
 }

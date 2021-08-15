@@ -56,12 +56,31 @@ export class ServerGame {
       );
   }
 
+  checkGameOver() {
+    const { players, io } = this;
+    const alivePlayers = players.filter(player => player.proxy.health > 0);
+    if (alivePlayers.length === 0) {
+      const playerRank = players.map(player => player.updateInfo);
+      playerRank.sort((a: PlayerUpdateInfo, b: PlayerUpdateInfo) => {
+        if (a.s < b.s) {
+          return -1;
+        } else if (a.s > b.s) {
+          return 1;
+        }
+        return 0;
+      });
+      this.status = GameStatus.Over;
+      io.broadcastSocket(ServerSocketEvents.SocketGameOver, playerRank);
+      setTimeout(() => {
+        this.reset();
+      }, 2000);
+    }
+  }
+
   newPlayer(client: Client, playerName: string) {
     const { io, players, grid } = this;
     const player = new ServerPlayer(grid, client, playerName);
-    player.on('dead', () => {
-      io.broadcastSocket(ServerSocketEvents.SocketPlayerDead, client.id);
-    });
+    player.proxy.on('dead', () => this.checkGameOver());
     this.players.push(player);
     io.broadcastSocket(ServerSocketEvents.SocketPlayerJoined, player.info);
 
@@ -155,15 +174,16 @@ export class ServerGame {
 
   init() {
     const { io } = this;
+    this.paused = false;
+    this.fps = InitialFPS;
+    this.grid.init();
     this.players.forEach(player => player.gameInit());
     io.broadcastSocket(ServerSocketEvents.SocketGameInit);
   }
 
   start() {
     const { players, io } = this;
-    this.paused = false;
     this.status = GameStatus.Running;
-    this.fps = InitialFPS;
     players.forEach(player => player.gameStart());
     io.broadcastSocket(ServerSocketEvents.SocketGameStart);
   }
@@ -179,7 +199,7 @@ export class ServerGame {
     if (this.status !== GameStatus.Running || this.paused) {
       return;
     }
-    this.players.forEach(player => player.update());
+    this.players.forEach(player => !player.proxy.isDead && player.update());
     this.io.broadcastUDP(ServerUDPEvents.UDPRemoteUpdate, this.getGameState());
     // this.increaseSpeed();
   };

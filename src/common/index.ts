@@ -7,7 +7,8 @@ export const PingIntervalMs = 1000;
 export const InitialFPS = 7;
 export const MAXFPS = 20;
 export const FPSScalar = 1.005;
-export const CollisionDamage = 3;
+export const CollisionDamage = 10;
+export const BreakCellPoints = 1;
 
 export interface PlayerInfo {
   cid: string;
