@@ -67,7 +67,7 @@ export class ServerIO extends EventEmitter {
           .bold()
           .color('magenta')
           .log(`<- udp.message.receive <- ${clientId}: "${eventName}"`);
-        payload && logger.color('magenta').log(stringify(payload));
+        payload && logger.color('magenta').log(`\t> ${stringify(payload)}`);
       }
       this.emit(Protocol.UDPMessage, message);
       const client = clients.get(clientId)!;
@@ -106,7 +106,7 @@ export class ServerIO extends EventEmitter {
           .bold()
           .color('magenta')
           .log(`<- socket.message.receive <- ${clientId}: "${eventName}"`);
-        payload && logger.color('magenta').log(stringify(payload));
+        payload && logger.color('magenta').log(`\t> ${stringify(payload)}`);
       }
       this.emit(Protocol.SocketMessage, message);
       const client = clients.get(clientId)!;

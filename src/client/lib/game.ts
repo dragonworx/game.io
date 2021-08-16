@@ -171,7 +171,7 @@ export class ClientGame {
     document.querySelector('#fps')!.innerHTML = `${gameState.f.toFixed(1)}fps`;
     gameState.p.forEach(info => {
       const player = this.getPlayer(info.cid);
-      player.remoteUpdate(info);
+      player.remoteUpdate(info, this.userPlayer);
     });
   }
 

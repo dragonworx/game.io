@@ -1,5 +1,6 @@
 import { Direction, PlayerInfo, PlayerUpdateInfo } from '../../common';
 import { Cell, Grid } from '../../common/grid';
+import { Alert } from './components/alert';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { GridView } from './gridView';
 import { ClientIO } from './io';
@@ -19,6 +20,7 @@ export class ClientPlayer {
   cell: Cell;
   playerStatusEl: HTMLDivElement;
   isDead: boolean = false;
+  isTakingDamage: boolean = false;
 
   constructor(
     grid: Grid,
@@ -109,7 +111,9 @@ export class ClientPlayer {
   }
 
   gameInit() {
+    this.isTakingDamage = false;
     this.label.visible = false;
+    this.sprite.tint = 0xffffff;
   }
 
   gameStart() {}
@@ -120,16 +124,20 @@ export class ClientPlayer {
 
   onLocalUpdate = () => {
     // this is mainly for graphics/animation updates, server has authoritive updates
+    if (this.isDead) {
+      return;
+    }
     this.sprite.rotation += degToRad(1);
   };
 
-  remoteUpdate(info: PlayerUpdateInfo) {
+  remoteUpdate(info: PlayerUpdateInfo, userPlayer?: ClientPlayer) {
     // this is the update from the server game state
     const { container, grid, isDead } = this;
     if (isDead) {
       return;
     }
     const {
+      cid: clientId,
       h,
       v,
       d: direction,
@@ -146,10 +154,12 @@ export class ClientPlayer {
     container.x = x;
     container.y = y;
 
-    this.updatePlayerStatus(score, health);
+    if (userPlayer && clientId === userPlayer.info.cid) {
+      this.updatePlayerStatus(score, health);
+    }
 
     if (health === 0 && !this.isDead) {
-      this.die();
+      this.die(userPlayer);
     }
 
     // animate break for previous cell
@@ -160,11 +170,38 @@ export class ClientPlayer {
     // check for current collision
     if (newCell.isEmpty) {
       // todo: local collision, take damage...
+      this.takeDamage();
       console.log('collision!', h, v);
     }
 
     // check for current cut
     grid.checkForCut(this.info.cid, newCell, direction, lastDirection);
+  }
+
+  takeDamage() {
+    const { graphics, sprite, isTakingDamage } = this;
+    if (isTakingDamage) {
+      return;
+    }
+    graphics
+      .ease(
+        sprite,
+        {
+          tint: 0xff0000,
+        },
+        250,
+        'easeOutBack',
+        0,
+        3,
+      )
+      .on('complete', () => {
+        if (this.isDead) {
+          return;
+        }
+        sprite.tint = 0xffffff;
+        this.isTakingDamage = false;
+      });
+    this.isTakingDamage = true;
   }
 
   updatePlayerStatus(score: number, health: number) {
@@ -177,8 +214,16 @@ export class ClientPlayer {
     healthEl.style.width = `${health}%`;
   }
 
-  die() {
+  die(userPlayer?: ClientPlayer) {
     this.isDead = true;
-    console.log('DEAD!');
+    this.sprite.tint = 0xff0000;
+    console.log('DEAD!', this.info.n);
+    if (userPlayer && userPlayer.info.cid === this.info.cid) {
+      const alert = new Alert(this.graphics, `You're toast!`);
+      alert.on('shown', () => {
+        alert.hide(this.grid.innerBounds.centerX, 0);
+      });
+      alert.show();
+    }
   }
 }

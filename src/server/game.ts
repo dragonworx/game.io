@@ -44,19 +44,22 @@ export class ServerGame {
     this.paused = false;
     this.status = GameStatus.Pre;
     this.players = [];
-    this.io.broadcastSocket(ServerSocketEvents.SocketReload);
+    // this.io.broadcastSocket(ServerSocketEvents.SocketReload);
   }
 
-  logGameState() {
+  inspect() {
     logger
       .color('white')
       .bgColor('blue')
       .log(
-        `gameState[${this.players.length}]: ${stringify(this.getGameState())}`,
+        `gameState[${this.players.length}]: ${stringify(
+          this.getGameState(),
+          true,
+        )}`,
       );
   }
 
-  checkGameOver() {
+  onPlayerDead() {
     const { players, io } = this;
     const alivePlayers = players.filter(player => player.proxy.health > 0);
     if (alivePlayers.length === 0) {
@@ -70,17 +73,16 @@ export class ServerGame {
         return 0;
       });
       this.status = GameStatus.Over;
+      this.stop();
       io.broadcastSocket(ServerSocketEvents.SocketGameOver, playerRank);
-      setTimeout(() => {
-        this.reset();
-      }, 2000);
+      this.reset();
     }
   }
 
   newPlayer(client: Client, playerName: string) {
     const { io, players, grid } = this;
     const player = new ServerPlayer(grid, client, playerName);
-    player.proxy.on('dead', () => this.checkGameOver());
+    player.proxy.on('dead', () => this.onPlayerDead());
     this.players.push(player);
     io.broadcastSocket(ServerSocketEvents.SocketPlayerJoined, player.info);
 
@@ -164,7 +166,7 @@ export class ServerGame {
           `Remove ${clientId} "${player.name}" playerCount: ${players.length}`,
         );
       players.splice(index, 1);
-      this.logGameState();
+      this.inspect();
     }
   }
 
@@ -191,6 +193,7 @@ export class ServerGame {
   stop() {
     const { io } = this;
     this.status = GameStatus.Over;
+    console.log('STOP');
     io.broadcastSocket(ServerSocketEvents.SocketGameStop);
   }
 
@@ -199,7 +202,7 @@ export class ServerGame {
     if (this.status !== GameStatus.Running || this.paused) {
       return;
     }
-    this.players.forEach(player => !player.proxy.isDead && player.update());
+    this.players.forEach(player => player.update());
     this.io.broadcastUDP(ServerUDPEvents.UDPRemoteUpdate, this.getGameState());
     // this.increaseSpeed();
   };

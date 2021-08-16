@@ -96,6 +96,7 @@ export class Graphics {
       ease: easeFn,
       wait,
       repeat,
+      reverse: repeat > 0,
     });
   }
 

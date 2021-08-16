@@ -17,7 +17,7 @@ export class GridProxy extends EventEmitter {
     this.clientId = clientId;
     this.grid = grid;
     this.cell = grid.cells[0][0];
-    grid.on('breakcell', this.onBreakCell);
+    grid.on('cut', this.onCut);
   }
 
   get isDead() {
@@ -157,9 +157,10 @@ export class GridProxy extends EventEmitter {
     }
   }
 
-  onBreakCell = (clientId: string, cell: Cell) => {
+  onCut = (clientId: string, cellCount: number) => {
     if (clientId === this.clientId) {
-      this.score += BreakCellPoints;
+      console.log('CUT!', clientId, cellCount);
+      this.score += BreakCellPoints * cellCount;
     }
   };
 }

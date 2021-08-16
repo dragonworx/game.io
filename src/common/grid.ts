@@ -154,6 +154,7 @@ export class Grid extends EventEmitter {
         cells.forEach(cell => (cell.isEmpty = false));
       } else {
         cells.forEach(cell => this.breakCell(clientId, cell));
+        this.emit('cut', clientId, cells.length);
       }
     }
   }

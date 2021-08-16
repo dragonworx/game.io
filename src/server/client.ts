@@ -34,7 +34,7 @@ export class Client {
           .bold()
           .color('yellow')
           .log(`-> udp.message.send -> ${this.id}: "${eventName}"`);
-        payload && logger.color('white').log(`> ${stringify(payload)}`);
+        payload && logger.color('yellow').log(`\t> ${stringify(payload)}`);
       }
       this.udp.emit(Protocol.UDPMessage, {
         clientId: this.id,
@@ -56,7 +56,7 @@ export class Client {
           .bold()
           .color('yellow')
           .log(`-> socket.message.send -> ${this.id}: "${eventName}"`);
-        payload && logger.color('white').log(`> ${stringify(payload)}`);
+        payload && logger.color('yellow').log(`\t> ${stringify(payload)}`);
       }
       this.socket!.emit(Protocol.SocketMessage, {
         clientId: this.id,

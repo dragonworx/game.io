@@ -45,7 +45,7 @@ export class ServerApp {
     const { game } = this;
     const actions: { [k: string]: () => void } = {
       clear: () => console.clear(),
-      gameState: () => game.logGameState(),
+      inspect: () => game.inspect(),
       reset: () => game.reset(),
       stop: () => game.stop(),
       toggle: () => game.toggle(),
@@ -79,17 +79,12 @@ export class ServerApp {
       .color('black')
       .bgColor('green')
       .log(`onClientConnected: ${client.id}`);
-    this.game.logGameState();
     client.messageUDP(ServerUDPEvents.UDPInit);
     client.messageSocket(ServerSocketEvents.SocketInit);
     client.messageSocket(
       ServerSocketEvents.SocketInitConnection,
       this.game.status,
     );
-
-    // for (let i = 0; i < 4; i++) {
-    //   this.game.newPlayer(client, `Player ${i + 1}`);
-    // }
   };
 
   onUDPPing = (client: Client) => {
@@ -103,7 +98,7 @@ export class ServerApp {
   onSocketPlayerJoin = (client: Client, playerName: string) => {
     logger.color('white').bgColor('cyan').log(`onPlayerJoin: ${client.id}`);
     this.game.newPlayer(client, playerName);
-    this.game.logGameState();
+    this.game.inspect();
   };
 
   onSocketPlayerInput = (client: Client, action: number) => {

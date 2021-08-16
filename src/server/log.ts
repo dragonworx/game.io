@@ -2,8 +2,10 @@ import logger from 'node-color-log';
 
 export { logger };
 
-export const stringify = (message: any) =>
-  typeof message === 'string' ? message : JSON.stringify(message);
+export const stringify = (message: any, formatted: boolean = false) =>
+  typeof message === 'string'
+    ? message
+    : JSON.stringify(message, null, formatted ? 4 : undefined);
 
 export function fatalExit(message: any, errorCode = -1) {
   logger.color('white').bgColor('red').log(stringify(message));

@@ -50,6 +50,8 @@ export class ServerPlayer extends EventEmitter {
   gameStart() {}
 
   update() {
-    this.proxy.update();
+    const { proxy } = this;
+    if (proxy.isDead) return;
+    proxy.update();
   }
 }

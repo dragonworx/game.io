@@ -148,35 +148,39 @@ header.collapsed {
 #gameStatus {
   top: 2px;
   right: 5px;
-  font-size: 20px;
+  font-size: 12px;
 }
 
 #fps {
   top: 25px;
   right: 5px;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 #playerStatus {
-  top: 5px;
-  left: 363px;
-  font-size: 25px;
+  top: 45px;
+  left: 133px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
 }
 
 #playerStatus > * {
   display: inline-block;
+  margin-right: 5px;
 }
 
 #playerStatus .score {
   color: white;
   min-width: 70px;
+  margin-left: 5px;
 }
 
 #playerStatus .health {
   background-color: red;
   position: relative;
   width: 150px;
-  height: 20px;
+  height: 10px;
   border-radius: 5px;
 }
 
