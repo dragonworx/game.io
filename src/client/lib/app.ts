@@ -132,8 +132,8 @@ export class ClientApp {
 
   init() {
     this.graphics.preload().then(() => {
-      this.game.initGridView();
-      document.querySelector('#main header')!.classList.add('expanded');
+      this.game.preInit();
+      document.querySelector('#playerName')!.classList.add('expanded');
       new PlayerNameInput(this.audio).on('submit', this.onPlayerNameSubmit);
       this.io.messageSocket(ClientSocketEvents.SocketRequestGameState);
     });

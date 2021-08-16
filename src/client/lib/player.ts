@@ -5,6 +5,7 @@ import { Alert } from './components/alert';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { GridView } from './gridView';
 import { ClientIO } from './io';
+import { Particles } from './particles';
 
 export class ClientPlayer {
   grid: Grid;
@@ -15,6 +16,7 @@ export class ClientPlayer {
   gridView: GridView;
   container: PIXI.Container;
   sprite: PIXI.Sprite;
+  glowSprite: PIXI.Sprite;
   label: PIXI.Text;
   hasAddedToStage: boolean = false;
   direction: Direction = Direction.Stationary;
@@ -23,6 +25,8 @@ export class ClientPlayer {
   playerStatusEl: HTMLDivElement;
   isDead: boolean = false;
   isTakingDamage: boolean = false;
+  paricles: Particles;
+  tint: number;
 
   constructor(
     grid: Grid,
@@ -48,12 +52,27 @@ export class ClientPlayer {
       stroke: '#000000',
     }));
 
+    const r = Math.random();
+    const g = Math.random();
+    const b = Math.random();
+    const tint = (this.tint = PIXI.utils.rgb2hex([r, g, b]));
+
+    this.paricles = new Particles(graphics, container);
+
+    const glowTxture = graphics.textures.get('blade-glow');
+    const glowSprite = (this.glowSprite = new PIXI.Sprite(glowTxture));
+    glowSprite.anchor.x = glowSprite.anchor.y = 0.5;
+    glowSprite.scale.x = glowSprite.scale.y = 0.5;
+    container.addChild(glowSprite);
+
     const texture = graphics.textures.get('blade');
     const sprite = (this.sprite = new PIXI.Sprite(texture));
+    sprite.tint = tint;
     sprite.width = sprite.height = grid.cellSize;
     sprite.anchor.x = sprite.anchor.y = 0.5;
     label.anchor.x = label.anchor.y = 0.5;
     container.addChild(sprite, label);
+
     graphics.addTicker(this.onLocalUpdate);
 
     this.playerStatusEl = document.querySelector('#playerStatus')!;
@@ -116,24 +135,29 @@ export class ClientPlayer {
 
   gameInit() {
     this.isTakingDamage = false;
-    this.sprite.tint = 0xffffff;
+    this.sprite.tint = this.tint;
     this.label.visible = true;
   }
 
   gameStart() {
     this.label.visible = false;
+    this.paricles.start();
   }
 
   dispose() {
     this.graphics.removeObject(this.container);
   }
 
-  onLocalUpdate = () => {
+  onLocalUpdate = (t: number) => {
+    console.log(t);
     // this is mainly for graphics/animation updates, server has authoritive updates
     if (this.isDead) {
       return;
     }
-    this.sprite.rotation += degToRad(1);
+    this.sprite.rotation += degToRad(5);
+    this.glowSprite.rotation = this.sprite.rotation;
+    this.glowSprite.alpha = Math.cos(Date.now() / 200) * 0.3 + 0.7;
+    this.paricles.update(t);
   };
 
   remoteUpdate(info: PlayerUpdateInfo, userPlayer?: ClientPlayer) {
@@ -175,7 +199,6 @@ export class ClientPlayer {
 
     // check for current collision
     if (newCell.isEmpty) {
-      // todo: local collision, take damage...
       this.takeDamage();
       console.log('collision!', h, v);
     }
@@ -185,7 +208,7 @@ export class ClientPlayer {
   }
 
   takeDamage() {
-    const { graphics, sprite, isTakingDamage, isDead } = this;
+    const { graphics, sprite, glowSprite, isTakingDamage, isDead } = this;
     if (isTakingDamage || isDead) {
       return;
     }
@@ -205,8 +228,25 @@ export class ClientPlayer {
         if (this.isDead) {
           return;
         }
-        sprite.tint = 0xffffff;
+        sprite.tint = this.tint;
         this.isTakingDamage = false;
+      });
+    graphics
+      .ease(
+        glowSprite,
+        {
+          tint: 0xff0000,
+        },
+        250,
+        'easeOutBack',
+        0,
+        3,
+      )
+      .on('complete', () => {
+        if (this.isDead) {
+          return;
+        }
+        glowSprite.tint = this.tint;
       });
     this.isTakingDamage = true;
   }
@@ -233,5 +273,8 @@ export class ClientPlayer {
       });
       alert.show();
     }
+    this.label.visible = false;
+    this.sprite.filters = [new PIXI.filters.BlurFilter()];
+    this.paricles.stop();
   }
 }

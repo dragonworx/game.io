@@ -45,6 +45,7 @@ export class ServerGame {
     this.paused = false;
     this.status = GameStatus.Pre;
     this.players = [];
+    this.grid.init();
   }
 
   inspect() {

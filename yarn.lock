@@ -3714,6 +3714,11 @@ pixi-ease@^3.0.7:
     eventemitter3 "^4.0.0"
     penner "^0.1.3"
 
+pixi-particles@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/pixi-particles/-/pixi-particles-4.3.1.tgz#8457b52f51d9ab9ef266cdcb86a762ec882113d8"
+  integrity sha512-XSqDFgYwm/7FRCgP5I2Fc57d98qvb1ql/x4uTjdP4uXDUGgjdO8OW/2A0HVWS1CkOht/1x6dQzsM1oCJAUlaow==
+
 pixi.js@^6.1.1:
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/pixi.js/-/pixi.js-6.1.1.tgz#28bc7687821c221e8f543ae89bc890e7d294d023"

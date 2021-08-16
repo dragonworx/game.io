@@ -14,44 +14,45 @@
   <body>
     <div id="main">
       <header>
-        <form id="playerName">
-          <label
-            >Join:
-            <input type="text" value="Ali" autofocus maxlength="12" /></label
-          ><input type="submit" value="Ready!" />
-        </form>
-      </header>
-
-      <div id="info">
-        <div id="latency-info" class="group cols">
-          <input type="checkbox" id="latency" checked />
-          <div id="latency-udp">udp: <span></span></div>
-          <div id="latency-socket">tcp: <span></span></div>
-        </div>
-        <button id="audio" class="hidden group"><img /></button>
-        <div id="debug" class="group">
-          <select>
-            <option>clear</option>
-            <option>inspect</option>
-            <option>stop</option>
-            <option>gameover</option>
-            <option selected>toggle</option>
-            <option>reset</option>
-          </select>
-          <button>cmd</button>
-        </div>
-        <div class="spacer"></div>
-        <div id="playerStatus" class="group">
+        <div id="playerStatus">
           <div class="health"><div class="health-bar"></div></div>
           Score:
           <div class="score">0</div>
         </div>
-        <div class="spacer"></div>
-        <div id="gameStatus" class="group">Status: <span></span></div>
-        <div id="fps"><span></span></div>
+      </header>
+
+      <form id="playerName">
+        <label
+          >Join:
+          <input type="text" value="Ali" autofocus maxlength="12" /></label
+        ><input type="submit" value="Ready!" />
+      </form>
+
+      <div id="latency-info">
+        <input type="checkbox" id="latency" checked />
+        <div id="latency-udp">udp: <span></span></div>
+        <div id="latency-socket">tcp: <span></span></div>
       </div>
 
-      <div id="clientId">ClientID: <span></span></div>
+      <button id="audio" class="hidden"><img /></button>
+
+      <div id="debug">
+        <select>
+          <option>clear</option>
+          <option>inspect</option>
+          <option>stop</option>
+          <option>gameover</option>
+          <option selected>toggle</option>
+          <option>reset</option>
+        </select>
+        <button>cmd</button>
+      </div>
+
+      <div id="gameStatus">Status: <span></span></div>
+
+      <div id="fps">fps: <span></span></div>
+
+      <div id="clientId">Client ID: <span></span></div>
       <div id="canvas"></div>
     </div>
   </body>

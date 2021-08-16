@@ -46,7 +46,10 @@ export class ServerApp {
     const actions: { [k: string]: () => void } = {
       clear: () => console.clear(),
       inspect: () => game.inspect(),
-      reset: () => game.reset(),
+      reset: () => {
+        game.reset();
+        this.io.broadcastSocket(ServerSocketEvents.SocketReload);
+      },
       stop: () => game.stop(),
       gameover: () => game.debugGameOver(),
       toggle: () => game.toggle(),
