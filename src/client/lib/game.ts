@@ -211,7 +211,28 @@ export class ClientGame {
     alert.show();
     alert.on('hidden', () => {
       audio.play('highscore');
-      new HighScore(graphics, playerRank).show();
+      new HighScore(graphics, playerRank).show().on('shown', () => {
+        const playerName = document.querySelector(
+          '#playerName',
+        )! as HTMLFormElement;
+        playerName.querySelector('label')!.style.display = 'none';
+        playerName.classList.remove('ready');
+        playerName.classList.remove('collapsed');
+        playerName.classList.add('expanded');
+        const submitButton = playerName.querySelector(
+          'input[type="submit"',
+        )! as HTMLInputElement;
+        submitButton.style.display = 'none';
+        const button = playerName.querySelector(
+          '#reload',
+        )! as HTMLButtonElement;
+        button.style.display = 'block';
+        button.addEventListener('mouseup', (e: Event) => {
+          e.preventDefault();
+          window.location.reload();
+          return false;
+        });
+      });
     });
   }
 }

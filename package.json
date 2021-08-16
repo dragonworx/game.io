@@ -16,7 +16,8 @@
     "build:prod:server": "webpack --mode=production --config webpack.server.js",
     "serve:dev": "nodemon ./dist/server/bundle.js --watch",
     "serve:prod:win": "set NODE_ENV=production && node index.js",
-    "serve:prod": "NODE_ENV=production node index.js"
+    "serve:prod": "NODE_ENV=production node index.js",
+    "count": "npx cloc ./src"
   },
   "keywords": [],
   "author": "Yannick Deubel",

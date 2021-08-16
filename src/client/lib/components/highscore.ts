@@ -76,8 +76,13 @@ export class HighScore extends EventEmitter {
         'easeInOutBack',
       )
       .on('complete', () => {
-        setTimeout(() => this.present(), 500);
+        setTimeout(() => {
+          this.present();
+          this.emit('shown');
+        }, 500);
       });
+
+    return this;
   }
 
   present() {

@@ -149,7 +149,6 @@ export class ClientPlayer {
   }
 
   onLocalUpdate = (t: number) => {
-    console.log(t);
     // this is mainly for graphics/animation updates, server has authoritive updates
     if (this.isDead) {
       return;

@@ -149,4 +149,8 @@ export class ServerIO extends EventEmitter {
     });
     return invalidClients;
   }
+
+  clear() {
+    this.clients.clear();
+  }
 }

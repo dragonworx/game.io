@@ -12,7 +12,7 @@ import {
   Direction,
   gameStatusToString,
 } from '../common';
-import { Cell, Grid } from '../common/grid';
+import { Grid } from '../common/grid';
 import { ServerSocketEvents, ServerUDPEvents } from '../common/messaging';
 import { Client } from './client';
 import { ServerIO } from './io';
@@ -44,6 +44,7 @@ export class ServerGame {
     this.stop();
     this.paused = false;
     this.status = GameStatus.Pre;
+    this.fps = InitialFPS;
     this.players = [];
     this.grid.init();
   }
@@ -182,6 +183,7 @@ export class ServerGame {
 
   start() {
     const { players, io } = this;
+    console.log('START!');
     this.status = GameStatus.Running;
     players.forEach(player => player.gameStart());
     io.broadcastSocket(ServerSocketEvents.SocketGameStart);
@@ -190,6 +192,7 @@ export class ServerGame {
   stop() {
     const { io } = this;
     this.status = GameStatus.Over;
+    this.players.length = 0;
     console.log('STOP');
     io.broadcastSocket(ServerSocketEvents.SocketGameStop);
   }

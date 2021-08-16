@@ -48,7 +48,9 @@ export class ServerApp {
       inspect: () => game.inspect(),
       reset: () => {
         game.reset();
+        game.players.length = 0;
         this.io.broadcastSocket(ServerSocketEvents.SocketReload);
+        this.io.clear();
       },
       stop: () => game.stop(),
       gameover: () => game.debugGameOver(),
