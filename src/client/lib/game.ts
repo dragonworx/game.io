@@ -219,14 +219,10 @@ export class ClientGame {
         playerName.classList.remove('ready');
         playerName.classList.remove('collapsed');
         playerName.classList.add('expanded');
-        const submitButton = playerName.querySelector(
-          'input[type="submit"',
-        )! as HTMLInputElement;
-        submitButton.style.display = 'none';
         const button = playerName.querySelector(
-          '#reload',
+          '.button',
         )! as HTMLButtonElement;
-        button.style.display = 'block';
+        button.innerHTML = 'Reload!';
         button.addEventListener('mouseup', (e: Event) => {
           e.preventDefault();
           window.location.reload();

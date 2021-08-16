@@ -113,10 +113,6 @@ export class ClientApp {
     button.onclick = () => {
       this.io.messageSocket(ClientSocketEvents.SocketDebug, select.value);
     };
-    document.addEventListener(
-      'keydown',
-      (e: KeyboardEvent) => e.code === 'Enter' && button.focus(),
-    );
   }
 
   initLatencySwitch() {
