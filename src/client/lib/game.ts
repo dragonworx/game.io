@@ -37,7 +37,11 @@ export class ClientGame {
     this.io = io;
     this.graphics = graphics;
     const grid = (this.grid = new Grid(gridSize, gridDivisions, gridMargin));
-    grid.on('cut', () => this.audio.play('break'));
+    grid.on(
+      'cut',
+      (clientId: string, cellCount: number) =>
+        cellCount > 0 && this.audio.play('break'),
+    );
 
     this.gridView = new GridView(grid, graphics);
     this.audio = audio;
