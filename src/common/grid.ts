@@ -41,9 +41,17 @@ export class Grid extends EventEmitter {
   }
 
   init() {
+    const { cells, divisions } = this;
     this.forEach((cell: Cell) => {
       cell.isEmpty = false;
     });
+    // const clientId = 'not-used';
+    // cells[0].forEach(cell => this.breakCell(clientId, cell));
+    // cells[divisions - 1].forEach(cell => this.breakCell(clientId, cell));
+    // for (let v = 1; v <= divisions; v++) {
+    //   this.breakCell(clientId, this.getCell(1, v)!);
+    //   this.breakCell(clientId, this.getCell(divisions, v)!);
+    // }
   }
 
   getCell(h: number, v: number): Cell | null {
@@ -58,9 +66,9 @@ export class Grid extends EventEmitter {
     return cellMap.get(key)!;
   }
 
-  breakCell(clientId: string, cell: Cell) {
+  breakCell(clientId: string, cell: Cell, wasCut: boolean = false) {
     cell.isEmpty = true;
-    this.emit('breakcell', clientId, cell);
+    this.emit('breakcell', clientId, cell, wasCut);
   }
 
   forEach(fn: CellIterator) {
@@ -156,7 +164,7 @@ export class Grid extends EventEmitter {
         // hack to stop unknown flood fill bug due to edge case direction combinations
         cells.forEach(cell => (cell.isEmpty = false));
       } else {
-        cells.forEach(cell => this.breakCell(clientId, cell));
+        cells.forEach(cell => this.breakCell(clientId, cell, true));
         this.emit('cut', clientId, cells.length);
       }
     }

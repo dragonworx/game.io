@@ -52,7 +52,6 @@ export class ServerApp {
         this.io.broadcastSocket(ServerSocketEvents.SocketReload);
         this.io.clear();
       },
-      stop: () => game.stop(),
       gameover: () => game.debugGameOver(),
       toggle: () => game.toggle(),
     };

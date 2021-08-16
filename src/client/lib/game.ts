@@ -94,7 +94,7 @@ export class ClientGame {
   }
 
   preInit() {
-    this.gridView.init();
+    this.gridView.init(this.players);
     this.updateFPSInfo(InitialFPS);
   }
 
@@ -106,7 +106,7 @@ export class ClientGame {
   }
 
   showCountdown() {
-    const { graphics, grid } = this;
+    const { graphics, grid, audio } = this;
     const alert = new Alert(graphics, `Get ready in 3...`);
     alert.on('shown', () => {
       setTimeout(() => {

@@ -1,5 +1,6 @@
 import { Grid, Cell } from '../../common/grid';
 import { Graphics, PIXI } from './graphics';
+import { ClientPlayer } from './player';
 
 export const IntroAnimationDurationMs = 3000;
 
@@ -8,6 +9,7 @@ export class GridView {
   graphics: Graphics;
   cellSpriteMap: Map<Cell, PIXI.Sprite>;
   container: PIXI.Container;
+  players: ClientPlayer[] = [];
 
   constructor(grid: Grid, graphics: Graphics) {
     this.grid = grid;
@@ -20,7 +22,7 @@ export class GridView {
     grid.on('breakcell', this.onBreakCell);
   }
 
-  init() {
+  init(players: ClientPlayer[]) {
     const { grid, graphics, cellSpriteMap, container } = this;
     const { cellSize } = grid;
     const texture = graphics.textures.get('cell');
@@ -52,19 +54,27 @@ export class GridView {
           (sprite.width = cellSize), (sprite.height = cellSize);
         });
     });
+    this.players = players;
   }
 
-  onBreakCell = (_clientId: string, cell: Cell) => {
+  onBreakCell = (clientId: string, cell: Cell, wasCut: boolean) => {
     const { graphics, cellSpriteMap } = this;
     const sprite = cellSpriteMap.get(cell)!;
-    graphics.ease(
-      sprite,
-      {
-        width: 0,
-        height: 0,
+    const player = this.players.find(player => player.info.cid === clientId)!;
+    sprite.tint = player.tint;
+    setTimeout(
+      () => {
+        graphics.ease(
+          sprite,
+          {
+            width: 0,
+            height: 0,
+          },
+          2000,
+          'easeOutBack',
+        );
       },
-      2000,
-      'easeOutBack',
+      wasCut ? Math.round(Math.random() * 500) : 0,
     );
   };
 }
