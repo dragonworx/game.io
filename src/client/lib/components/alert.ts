@@ -1,5 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
 import * as PIXI from 'pixi.js';
+import { DialogFontSettings, DialogFontSizeTitle } from '../../../common';
 import { Graphics } from '../graphics';
 
 export const AlertHeight = 40;
@@ -15,17 +16,10 @@ export class Alert extends EventEmitter {
   constructor(graphics: Graphics, message: string) {
     super();
     this.graphics = graphics;
-    const text = (this.text = new PIXI.Text(message, {
-      fontFamily: 'Orbitron',
-      fontSize: 26,
-      fill: '#ffffff',
-      stroke: '#000000',
-      dropShadow: true,
-      dropShadowColor: '#000000',
-      dropShadowBlur: 4,
-      dropShadowAngle: Math.PI / 6,
-      dropShadowDistance: 6,
-    }));
+    this.text = new PIXI.Text(message, {
+      ...DialogFontSettings,
+      fontSize: DialogFontSizeTitle,
+    });
 
     if (!Alert.hasInit) {
       graphics.addObject(Alert.container);
@@ -33,7 +27,7 @@ export class Alert extends EventEmitter {
     }
   }
 
-  show() {
+  show(y?: number) {
     const { text, graphics } = this;
     const [centerX, centerY] = graphics.center;
     Alert.alerts.push(this);
@@ -50,7 +44,7 @@ export class Alert extends EventEmitter {
         text,
         {
           alpha: 1,
-          y: centerY - index * AlertHeight,
+          y: y !== undefined ? y : centerY - index * AlertHeight,
         },
         1000,
         'easeInOutBack',

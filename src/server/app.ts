@@ -99,7 +99,6 @@ export class ServerApp {
   onSocketPlayerJoin = (client: Client, playerName: string) => {
     logger.color('white').bgColor('cyan').log(`onPlayerJoin: ${client.id}`);
     this.game.newPlayer(client, playerName);
-    this.game.inspect();
   };
 
   onSocketPlayerInput = (client: Client, action: number) => {

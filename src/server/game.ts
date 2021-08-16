@@ -10,6 +10,7 @@ import {
   FPSScalar,
   PlayerUpdateInfo,
   Direction,
+  gameStatusToString,
 } from '../common';
 import { Cell, Grid } from '../common/grid';
 import { ServerSocketEvents, ServerUDPEvents } from '../common/messaging';
@@ -44,19 +45,15 @@ export class ServerGame {
     this.paused = false;
     this.status = GameStatus.Pre;
     this.players = [];
-    // this.io.broadcastSocket(ServerSocketEvents.SocketReload);
   }
 
   inspect() {
+    const info: any = this.getGameState();
+    info.s = gameStatusToString(info.s);
     logger
       .color('white')
       .bgColor('blue')
-      .log(
-        `gameState[${this.players.length}]: ${stringify(
-          this.getGameState(),
-          true,
-        )}`,
-      );
+      .log(`gameState[${this.players.length}]: ${stringify(info, true)}`);
   }
 
   onPlayerDead() {
@@ -97,7 +94,7 @@ export class ServerGame {
     if (allPlayersJoined) {
       setTimeout(() => {
         this.init();
-        setTimeout(() => this.start(), 0); //4000
+        setTimeout(() => this.start(), 4000);
       }, 2000);
     }
   }
@@ -166,7 +163,6 @@ export class ServerGame {
           `Remove ${clientId} "${player.name}" playerCount: ${players.length}`,
         );
       players.splice(index, 1);
-      this.inspect();
     }
   }
 
@@ -212,7 +208,7 @@ export class ServerGame {
     }
     this.players.forEach(player => player.update());
     this.io.broadcastUDP(ServerUDPEvents.UDPRemoteUpdate, this.getGameState());
-    // this.increaseSpeed();
+    this.increaseSpeed();
   };
 
   toggle = () => {

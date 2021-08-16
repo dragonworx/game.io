@@ -1,7 +1,7 @@
 import { Cell } from './grid';
 
 export const GridSize = 200; // 750
-export const GridDivisions = 20; // 70 odd numbers work best for initial distribution of players
+export const GridDivisions = 30; // 70 odd numbers work best for initial distribution of players
 export const GridMargin = 10;
 export const PingIntervalMs = 1000;
 export const InitialFPS = 5; // 7
@@ -9,6 +9,18 @@ export const MAXFPS = 20;
 export const FPSScalar = 1.005;
 export const CollisionDamage = 10;
 export const BreakCellPoints = 1;
+export const DialogFontSizeTitle = 26;
+export const DialogFontSizeBody = 14;
+export const DialogFontSettings = {
+  fontFamily: 'Orbitron',
+  fill: '#ffffff',
+  stroke: '#000000',
+  dropShadow: true,
+  dropShadowColor: '#000000',
+  dropShadowBlur: 4,
+  dropShadowAngle: Math.PI / 6,
+  dropShadowDistance: 6,
+};
 
 export interface PlayerInfo {
   cid: string;

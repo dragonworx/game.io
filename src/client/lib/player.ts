@@ -1,5 +1,6 @@
 import { Direction, PlayerInfo, PlayerUpdateInfo } from '../../common';
 import { Cell, Grid } from '../../common/grid';
+import { AudioPlayer } from './audio';
 import { Alert } from './components/alert';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { GridView } from './gridView';
@@ -10,6 +11,7 @@ export class ClientPlayer {
   io: ClientIO;
   info: PlayerInfo;
   graphics: Graphics;
+  audio: AudioPlayer;
   gridView: GridView;
   container: PIXI.Container;
   sprite: PIXI.Sprite;
@@ -27,12 +29,14 @@ export class ClientPlayer {
     io: ClientIO,
     info: PlayerInfo,
     graphics: Graphics,
+    audio: AudioPlayer,
     gridView: GridView,
   ) {
     this.grid = grid;
     this.io = io;
     this.info = info;
     this.graphics = graphics;
+    this.audio = audio;
     this.gridView = gridView;
     this.cell = grid.cells[0][0];
 
@@ -112,11 +116,13 @@ export class ClientPlayer {
 
   gameInit() {
     this.isTakingDamage = false;
-    this.label.visible = false;
     this.sprite.tint = 0xffffff;
+    this.label.visible = true;
   }
 
-  gameStart() {}
+  gameStart() {
+    this.label.visible = false;
+  }
 
   dispose() {
     this.graphics.removeObject(this.container);
@@ -179,10 +185,11 @@ export class ClientPlayer {
   }
 
   takeDamage() {
-    const { graphics, sprite, isTakingDamage } = this;
-    if (isTakingDamage) {
+    const { graphics, sprite, isTakingDamage, isDead } = this;
+    if (isTakingDamage || isDead) {
       return;
     }
+    this.audio.play('damage');
     graphics
       .ease(
         sprite,
@@ -218,6 +225,7 @@ export class ClientPlayer {
     this.isDead = true;
     this.sprite.tint = 0xff0000;
     console.log('DEAD!', this.info.n);
+    this.audio.play('dead');
     if (userPlayer && userPlayer.info.cid === this.info.cid) {
       const alert = new Alert(this.graphics, `You're toast!`);
       alert.on('shown', () => {

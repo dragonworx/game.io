@@ -14,10 +14,12 @@ import { ClientSocketEvents } from '../../common/messaging';
 import { Grid } from '../../common/grid';
 import { GridView } from './gridView';
 import { ClientIO } from './io';
+import { AudioPlayer } from './audio';
 
 export class ClientGame {
   io: ClientIO;
   graphics: Graphics;
+  audio: AudioPlayer;
   players: ClientPlayer[] = [];
   status: GameStatus = GameStatus.Unconnected;
   grid: Grid;
@@ -27,6 +29,7 @@ export class ClientGame {
   constructor(
     io: ClientIO,
     graphics: Graphics,
+    audio: AudioPlayer,
     gridSize: number,
     gridDivisions: number,
     gridMargin: number,
@@ -34,17 +37,22 @@ export class ClientGame {
     this.io = io;
     this.graphics = graphics;
     const grid = (this.grid = new Grid(gridSize, gridDivisions, gridMargin));
+    grid.on('cut', () => this.audio.play('break'));
 
     this.gridView = new GridView(grid, graphics);
-  }
-
-  getPlayer(clientId: string) {
-    return this.players.find(player => player.info.cid === clientId)!;
+    this.audio = audio;
   }
 
   newPlayer(playerInfo: PlayerInfo) {
-    const { players, graphics, io, grid, gridView } = this;
-    const player = new ClientPlayer(grid, io, playerInfo, graphics, gridView);
+    const { players, graphics, io, grid, gridView, audio } = this;
+    const player = new ClientPlayer(
+      grid,
+      io,
+      playerInfo,
+      graphics,
+      audio,
+      gridView,
+    );
     players.push(player);
     return player;
   }
@@ -76,6 +84,10 @@ export class ClientGame {
     }
   }
 
+  getPlayer(clientId: string) {
+    return this.players.find(player => player.info.cid === clientId)!;
+  }
+
   initGridView() {
     this.gridView.init();
   }
@@ -96,6 +108,7 @@ export class ClientGame {
         setTimeout(() => {
           alert.text.text = `Get ready in 1...`;
           setTimeout(() => {
+            this.audio.play('go');
             alert.text.text = `Go!`;
             const [x, y] = grid.innerBounds.center;
             alert.hide(x, y);
@@ -129,7 +142,7 @@ export class ClientGame {
   }
 
   init() {
-    // this.showCountdown();
+    this.showCountdown();
     this.grid.init();
     this.players.forEach(player => player.gameInit());
   }
@@ -182,8 +195,11 @@ export class ClientGame {
       const player = this.getPlayer(info.cid);
       player.remoteUpdate(info, this.userPlayer);
     });
-    console.log(playerRank);
-    const highscore = new HighScore(graphics, playerRank);
-    highscore.show();
+    this.audio.play('gameover');
+    this.audio.sounds.get('music.mp3')!.stop();
+    const alert = new Alert(graphics, 'Game Over!');
+    alert.on('shown', () => alert.hide(graphics.center[0], this.grid.size));
+    alert.show();
+    alert.on('hidden', () => new HighScore(graphics, playerRank).show());
   }
 }

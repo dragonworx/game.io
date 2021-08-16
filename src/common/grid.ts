@@ -79,6 +79,9 @@ export class Grid extends EventEmitter {
     direction: Direction,
     lastDirection: Direction,
   ) {
+    if (currentCell.isEmpty) {
+      return;
+    }
     if (isVertical(direction)) {
       lastDirection === Direction.Right &&
         this.checkForCutWithCell(
@@ -149,7 +152,7 @@ export class Grid extends EventEmitter {
         lastDirection,
       );
       const edges = cells.filter(cell => cell.isEdge);
-      if (edges.length) {
+      if (edges.length > 0) {
         // hack to stop unknown flood fill bug due to edge case direction combinations
         cells.forEach(cell => (cell.isEmpty = false));
       } else {

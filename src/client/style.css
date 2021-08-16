@@ -190,3 +190,19 @@ header.collapsed {
   height: 100%;
   border-radius: 5px;
 }
+
+#audio {
+  position: absolute;
+  left: 5px;
+  top: 30px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid #c0c0c0;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}

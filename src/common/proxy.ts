@@ -62,6 +62,8 @@ export class GridProxy extends EventEmitter {
       grid.breakCell(this.clientId, cell);
       this.checkForCollision();
       this.checkForCut();
+    } else {
+      this.checkForCollision();
     }
 
     if (this.direction !== lastDirection) {

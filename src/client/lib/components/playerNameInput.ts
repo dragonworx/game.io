@@ -1,7 +1,8 @@
 import { EventEmitter } from 'eventemitter3';
+import { AudioPlayer } from '../audio';
 
 export class PlayerNameInput extends EventEmitter {
-  constructor() {
+  constructor(audio: AudioPlayer) {
     super();
     const form = document.querySelector('#playerName')! as HTMLFormElement;
     const input = form.querySelector('input[type="text"]')! as HTMLInputElement;
@@ -16,6 +17,7 @@ export class PlayerNameInput extends EventEmitter {
     // setTimeout(() => this.emit('submit', input.value), 0);
 
     form.onsubmit = () => {
+      audio.play('music');
       const value = input.value.trim();
       if (value.length) {
         this.emit('submit', input.value);

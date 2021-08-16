@@ -20,6 +20,7 @@ import {
   PlayerInfo,
   PlayerUpdateInfo,
 } from '../../common';
+import { AudioPlayer } from './audio';
 
 const excludeLogUDPMessages: string[] = [
   ServerUDPEvents.UDPPong,
@@ -37,6 +38,7 @@ export class ClientApp {
   socketPing?: Ping;
   game: ClientGame;
   enableLatencyCheck: boolean = true;
+  audio: AudioPlayer;
 
   constructor() {
     const io = (this.io = new ClientIO());
@@ -78,9 +80,12 @@ export class ClientApp {
     const graphicsSize = cellSize * GridDivisions + GridMargin * 2;
     const graphics = (this.graphics = new Graphics(graphicsSize, graphicsSize));
 
+    const audio = (this.audio = new AudioPlayer());
+
     this.game = new ClientGame(
       io,
       graphics,
+      audio,
       GridSize,
       GridDivisions,
       GridMargin,
@@ -129,7 +134,7 @@ export class ClientApp {
     this.graphics.preload().then(() => {
       this.game.initGridView();
       document.querySelector('#main header')!.classList.add('expanded');
-      new PlayerNameInput().on('submit', this.onPlayerNameSubmit);
+      new PlayerNameInput(this.audio).on('submit', this.onPlayerNameSubmit);
       this.io.messageSocket(ClientSocketEvents.SocketRequestGameState);
     });
   }
