@@ -20,6 +20,7 @@ html * {
   justify-content: center;
   flex-direction: column;
   font-family: Orbitron;
+  background: linear-gradient(150deg, #000 0, #11532a 100%);
 }
 
 #main.visible {
@@ -35,7 +36,6 @@ header {
   justify-content: center;
   transition: height 1s ease-in-out;
   overflow: hidden;
-  background-color: #ccc;
   position: relative;
 }
 
@@ -51,6 +51,9 @@ header.collapsed {
   transition: top 1s;
   position: relative;
   top: 0px;
+  color: white;
+  display: flex;
+  align-items: center;
 }
 
 #playerName.ready {
@@ -67,23 +70,27 @@ header.collapsed {
   border-radius: 5px;
   font-family: 'Orbitron';
   color: white;
-  background-color: #999;
+  background: linear-gradient(180deg, #000 0, #00461a 100%);
   padding-left: 5px;
+  border: 1px solid #00ff75;
 }
 
 #playerName input[type='submit'] {
   font-family: Orbitron;
   margin-left: 5px;
-  border-radius: 3px;
-  border-width: 2px;
-  border-style: groove;
+  border-radius: 5px;
+  border-width: 3px;
+  border-style: outset;
   height: 18px;
   vertical-align: top;
   cursor: pointer;
+  background: linear-gradient(180deg, #000 0, #00461a 100%);
+  color: white;
+  border-color: #c7c7c7;
 }
 
 #canvas {
-  border: 1px solid #ccc;
+  box-shadow: 1px 3px 5px 5px rgba(0, 0, 0, 0.3);
 }
 
 #info {
@@ -94,11 +101,8 @@ header.collapsed {
   height: 30px;
   font-size: 10px;
   border-radius: 5px;
-}
-
-#info > * {
-  position: absolute;
   color: #777;
+  display: flex;
 }
 
 #latency {
@@ -119,7 +123,7 @@ header.collapsed {
 
 #clientId {
   position: absolute;
-  bottom: 5px;
+  bottom: 10px;
   left: 0;
   font-family: sans-serif;
   font-size: 16px;
@@ -127,10 +131,34 @@ header.collapsed {
   display: flex;
   justify-content: center;
   width: 100%;
-  color: #444;
+  color: #379143;
+}
+
+#clientId span {
+  margin-left: 5px;
+  color: #767676;
+}
+
+.group {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+}
+
+.cols {
+  flex-direction: column;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+#latency-info {
+  position: absolute;
 }
 
 #debug {
+  position: absolute;
   top: 5px;
   left: 90px;
   display: none;
@@ -149,6 +177,11 @@ header.collapsed {
   top: 2px;
   right: 5px;
   font-size: 12px;
+  color: #ccc;
+}
+
+#gameStatus span {
+  color: white;
 }
 
 #fps {
@@ -166,7 +199,6 @@ header.collapsed {
 }
 
 #playerStatus > * {
-  display: inline-block;
   margin-right: 5px;
 }
 

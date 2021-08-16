@@ -125,7 +125,7 @@ export class ClientGame {
 
   updateGameStatus(status: GameStatus) {
     this.status = status;
-    document.querySelector('#gameStatus')!.innerHTML =
+    document.querySelector('#gameStatus span')!.innerHTML =
       gameStatusToString(status);
   }
 
@@ -194,16 +194,19 @@ export class ClientGame {
   }
 
   showGameOver(playerRank: PlayerUpdateInfo[]) {
-    const { graphics } = this;
+    const { graphics, audio, grid } = this;
     playerRank.forEach(info => {
       const player = this.getPlayer(info.cid);
       player.remoteUpdate(info, this.userPlayer);
     });
-    this.audio.play('gameover');
-    this.audio.sounds.get('music.mp3')!.stop();
+    audio.play('gameover');
+    audio.sounds.get('music.mp3')!.stop();
     const alert = new Alert(graphics, 'Game Over!');
-    alert.on('shown', () => alert.hide(graphics.center[0], this.grid.size));
+    alert.on('shown', () => alert.hide(graphics.center[0], grid.size));
     alert.show();
-    alert.on('hidden', () => new HighScore(graphics, playerRank).show());
+    alert.on('hidden', () => {
+      audio.play('highscore');
+      new HighScore(graphics, playerRank).show();
+    });
   }
 }

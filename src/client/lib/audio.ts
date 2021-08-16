@@ -44,6 +44,7 @@ export class AudioPlayer {
       'gameover.mp3',
       'go.mp3',
       'damage.mp3',
+      'highscore.mp3',
     ].forEach(path => this.preloadSound(path));
   }
 

@@ -40,7 +40,7 @@ export class Graphics {
     const pixi = (this.pixi = new PIXI.Application({
       width,
       height,
-      backgroundColor: 0xffffff,
+      backgroundColor: 0x000000,
     }));
 
     document.getElementById('canvas')!.appendChild(pixi.view);
