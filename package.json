@@ -29,6 +29,7 @@
     "howler": "^2.2.3",
     "node-color-log": "^5.3.1",
     "pixi-ease": "^3.0.7",
+    "pixi-particles": "^4.3.1",
     "pixi.js": "^6.1.1",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",

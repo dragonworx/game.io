@@ -1,18 +1,19 @@
 import { Grid, Cell } from '../../common/grid';
 import { Graphics, PIXI } from './graphics';
 
-const degToRad = (deg: number) => deg * (Math.PI / 180);
-
-const IntroAnimationDurationMs = 3000;
+export const IntroAnimationDurationMs = 3000;
 
 export class GridView {
   grid: Grid;
   graphics: Graphics;
   cellSpriteMap: Map<Cell, PIXI.Sprite>;
+  container: PIXI.Container;
 
   constructor(grid: Grid, graphics: Graphics) {
     this.grid = grid;
     this.graphics = graphics;
+    this.container = new PIXI.Container();
+    graphics.addObject(this.container);
 
     this.cellSpriteMap = new Map();
 
@@ -20,7 +21,7 @@ export class GridView {
   }
 
   init() {
-    const { grid, graphics, cellSpriteMap } = this;
+    const { grid, graphics, cellSpriteMap, container } = this;
     const { cellSize } = grid;
     const texture = graphics.textures.get('cell');
     grid.forEach((cell: Cell) => {
@@ -34,7 +35,7 @@ export class GridView {
       sprite.width = 0;
       sprite.height = 0;
       sprite.alpha = 0;
-      graphics.addObject(sprite);
+      container.addChild(sprite);
       cellSpriteMap.set(cell, sprite);
       graphics
         .ease(
@@ -42,14 +43,13 @@ export class GridView {
           {
             width: cellSize,
             height: cellSize,
-            alpha: 1,
+            alpha: 0.5 + Math.random() * 0.5,
           },
           Math.round(Math.random() * IntroAnimationDurationMs),
           'easeOutCirc',
         )
         .on('complete', () => {
           (sprite.width = cellSize), (sprite.height = cellSize);
-          sprite.alpha = 1;
         });
     });
   }

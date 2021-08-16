@@ -5,8 +5,9 @@ import {
   PlayerUpdateInfo,
   gameStatusToString,
   CodeToAction,
+  InitialFPS,
 } from '../../common';
-import { Graphics } from './graphics';
+import { Graphics, PIXI } from './graphics';
 import { ClientPlayer } from './player';
 import { Alert } from './components/alert';
 import { HighScore } from './components/highscore';
@@ -39,7 +40,7 @@ export class ClientGame {
     const grid = (this.grid = new Grid(gridSize, gridDivisions, gridMargin));
     grid.on(
       'cut',
-      (clientId: string, cellCount: number) =>
+      (_clientId: string, cellCount: number) =>
         cellCount > 0 && this.audio.play('break'),
     );
 
@@ -92,8 +93,9 @@ export class ClientGame {
     return this.players.find(player => player.info.cid === clientId)!;
   }
 
-  initGridView() {
+  preInit() {
     this.gridView.init();
+    this.updateFPSInfo(InitialFPS);
   }
 
   updatePlayerInitialPositions(info: PlayerUpdateInfo[]) {
@@ -131,18 +133,16 @@ export class ClientGame {
 
   hidePlayerNameInput() {
     const playerName = document.querySelector('#playerName')!;
-    const header = document.querySelector('#main header')!;
     playerName.classList.add('ready');
-    header.classList.remove('expanded');
-    header.classList.add('collapsed');
+    playerName.classList.remove('expanded');
+    playerName.classList.add('collapsed');
   }
 
   showPlayerNameInput() {
     const playerName = document.querySelector('#playerName')!;
-    const header = document.querySelector('#main header')!;
     playerName.classList.remove('ready');
-    header.classList.remove('collapsed');
-    header.classList.add('expanded');
+    playerName.classList.remove('collapsed');
+    playerName.classList.add('expanded');
   }
 
   init() {
@@ -186,15 +186,20 @@ export class ClientGame {
 
   remoteUpdate(gameState: GameState) {
     this.status = gameState.s;
-    document.querySelector('#fps')!.innerHTML = `${gameState.f.toFixed(1)}fps`;
+    this.updateFPSInfo(gameState.f);
     gameState.p.forEach(info => {
       const player = this.getPlayer(info.cid);
       player.remoteUpdate(info, this.userPlayer);
     });
   }
 
+  updateFPSInfo(fps: number) {
+    document.querySelector('#fps span')!.innerHTML = `${fps.toFixed(1)}`;
+  }
+
   showGameOver(playerRank: PlayerUpdateInfo[]) {
-    const { graphics, audio, grid } = this;
+    const { graphics, audio, grid, gridView } = this;
+    gridView.container.filters = [new PIXI.filters.BlurFilter()];
     playerRank.forEach(info => {
       const player = this.getPlayer(info.cid);
       player.remoteUpdate(info, this.userPlayer);
