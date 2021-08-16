@@ -9,6 +9,7 @@ import {
 import { Graphics } from './graphics';
 import { ClientPlayer } from './player';
 import { Alert } from './components/alert';
+import { HighScore } from './components/highscore';
 import { ClientSocketEvents } from '../../common/messaging';
 import { Grid } from '../../common/grid';
 import { GridView } from './gridView';
@@ -176,17 +177,13 @@ export class ClientGame {
   }
 
   showGameOver(playerRank: PlayerUpdateInfo[]) {
-    const { graphics, grid } = this;
-    const alert = new Alert(graphics, `Game Over!`);
-    alert.on('shown', () => {
-      alert.hide(grid.innerBounds.centerX, 0);
+    const { graphics } = this;
+    playerRank.forEach(info => {
+      const player = this.getPlayer(info.cid);
+      player.remoteUpdate(info, this.userPlayer);
     });
-    alert.show();
     console.log(playerRank);
-  }
-
-  reset() {
-    // this.updateGameStatus(GameStatus.Pre);
-    // this.showPlayerNameInput();
+    const highscore = new HighScore(graphics, playerRank);
+    highscore.show();
   }
 }

@@ -65,9 +65,9 @@ export class ServerGame {
     if (alivePlayers.length === 0) {
       const playerRank = players.map(player => player.updateInfo);
       playerRank.sort((a: PlayerUpdateInfo, b: PlayerUpdateInfo) => {
-        if (a.s < b.s) {
+        if (a.s > b.s) {
           return -1;
-        } else if (a.s > b.s) {
+        } else if (a.s < b.s) {
           return 1;
         }
         return 0;
@@ -195,6 +195,14 @@ export class ServerGame {
     this.status = GameStatus.Over;
     console.log('STOP');
     io.broadcastSocket(ServerSocketEvents.SocketGameStop);
+  }
+
+  debugGameOver() {
+    this.players.forEach(player => {
+      player.proxy.score = Math.round(Math.random() * 100);
+      player.proxy.health = 0;
+      player.proxy.emit('dead');
+    });
   }
 
   update = () => {

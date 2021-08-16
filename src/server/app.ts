@@ -48,6 +48,7 @@ export class ServerApp {
       inspect: () => game.inspect(),
       reset: () => game.reset(),
       stop: () => game.stop(),
+      gameover: () => game.debugGameOver(),
       toggle: () => game.toggle(),
     };
     actions[cmd]();
