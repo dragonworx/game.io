@@ -5,4 +5,6 @@ console.clear();
 logger.setLevel('debug');
 logger.color('white').bgColor('blue').log('Server starting up');
 
-new ServerApp();
+const app = new ServerApp();
+
+export default app;

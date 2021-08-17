@@ -25,6 +25,7 @@ export class ServerGame {
   grid: Grid;
   paused: boolean = false;
   fps: number = InitialFPS;
+  timeout?: NodeJS.Timeout;
 
   constructor(io: ServerIO) {
     this.io = io;
@@ -33,7 +34,7 @@ export class ServerGame {
   }
 
   scheduleNextFrame() {
-    setTimeout(this.update, Math.round(1000 / this.fps));
+    this.timeout = setTimeout(this.update, Math.round(1000 / this.fps));
   }
 
   increaseSpeed() {
@@ -47,6 +48,7 @@ export class ServerGame {
     this.fps = InitialFPS;
     this.players = [];
     this.grid.init();
+    this.scheduleNextFrame();
   }
 
   inspect() {
@@ -190,10 +192,10 @@ export class ServerGame {
   }
 
   stop() {
-    const { io } = this;
-    this.status = GameStatus.Over;
-    this.players.length = 0;
     console.log('STOP');
+    const { io } = this;
+    this.timeout && clearTimeout(this.timeout);
+    this.status = GameStatus.Over;
     io.broadcastSocket(ServerSocketEvents.SocketGameStop);
   }
 

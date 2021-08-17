@@ -41,6 +41,11 @@ export class ServerApp {
     io.listen();
   }
 
+  reset() {
+    this.io.clear();
+    this.game.reset();
+  }
+
   onSocketDebug = (_client: Client, cmd: string) => {
     const { game } = this;
     const actions: { [k: string]: () => void } = {

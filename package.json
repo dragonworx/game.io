@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npm run serve:dev",
     "dev": "npm-run-all -l -p dev:client dev:server",
-    "dev:client": "webpack serve --config webpack.client.js",
+    "dev:client:serve": "webpack serve --config webpack.client.js",
+    "dev:client": "webpack --config webpack.client.js --watch",
     "dev:server": "webpack --config webpack.server.js --watch",
     "build:dev": "npm run build:dev:client && npm run build:dev:server",
     "build:dev:client": "webpack --config webpack.client.js",

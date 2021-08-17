@@ -10,6 +10,8 @@ module.exports = function (_env, argv) {
     externalsPresets: { node: true },
     entry: './src/server/index.ts',
     output: {
+      library: 'App',
+      libraryTarget: 'commonjs2',
       path: path.resolve(__dirname, './dist/server'),
       filename: 'bundle.js',
     },

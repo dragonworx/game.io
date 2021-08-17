@@ -74,6 +74,7 @@ export class ClientGame {
       alert.hide(x, y);
     });
     alert.show();
+    document.querySelector('#playerStatus')!.classList.add('visible');
   }
 
   removePlayer(clientId: string) {
