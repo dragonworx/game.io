@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=production GAME_PORT=8080 pm2 index.js",
+    "start": "NODE_ENV=production GAME_PORT=8080 pm2 start index.js",
     "dev": "npm-run-all -l -p dev:client dev:server",
     "dev:client:serve": "webpack serve --config webpack.client.js",
     "dev:client": "webpack --config webpack.client.js --watch",
