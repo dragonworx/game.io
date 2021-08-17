@@ -1,3 +1,4 @@
+import { GridDivisions } from '../../common';
 import { Grid, Cell } from '../../common/grid';
 import { Graphics, PIXI } from './graphics';
 import { ClientPlayer } from './player';
@@ -25,9 +26,14 @@ export class GridView {
   init(players: ClientPlayer[]) {
     const { grid, graphics, cellSpriteMap, container } = this;
     const { cellSize } = grid;
-    const texture = graphics.textures.get('cell');
+    const textureEnabled = graphics.textures.get('cell');
+    const textureDisabled = graphics.textures.get('cell-disabled');
     grid.forEach((cell: Cell) => {
       const { h, v } = cell;
+      let texture = textureEnabled;
+      if (v === 1 || v === GridDivisions || h === 1 || h === GridDivisions) {
+        texture = textureDisabled;
+      }
       const sprite = new PIXI.Sprite(texture);
       const [x, y] = grid.getCell(h, v)!.position;
       const halfSize = grid.cellSize / 2;

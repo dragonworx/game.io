@@ -158,6 +158,7 @@ export class ClientGame {
       this.bindInputEvents();
     }
     this.players.forEach(player => player.gameStart());
+    document.querySelector('#canvas')!.classList.add('no-cursor');
   }
 
   stop() {
@@ -166,6 +167,7 @@ export class ClientGame {
     if (this.userPlayer) {
       this.unbindInputEvents();
     }
+    document.querySelector('#canvas')!.classList.remove('no-cursor');
   }
 
   bindInputEvents() {
@@ -223,6 +225,7 @@ export class ClientGame {
           '.button',
         )! as HTMLButtonElement;
         button.innerHTML = 'Reload!';
+        button.focus();
         button.addEventListener('mouseup', (e: Event) => {
           e.preventDefault();
           window.location.reload();

@@ -8,6 +8,13 @@ export class PlayerNameInput extends EventEmitter {
     const input = div.querySelector('input[type="text"]')! as HTMLInputElement;
     const button = div.querySelector('.button')! as HTMLButtonElement;
 
+    try {
+      const name = window.localStorage.getItem('game_name');
+      if (name) {
+        input.value = name;
+      }
+    } catch (e) {}
+
     const urlParams = new URLSearchParams(window.location.search);
     const name = urlParams.get('name');
     if (name) {
@@ -26,6 +33,9 @@ export class PlayerNameInput extends EventEmitter {
         audio.play('music');
         this.emit('submit', input.value);
         button.removeEventListener('click', handler);
+        try {
+          window.localStorage.setItem('game_name', value);
+        } catch (e) {}
       } else {
         alert('Please, just enter a value for your name ok?');
       }

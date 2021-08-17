@@ -10,7 +10,11 @@ export enum EaseFn {}
 export { PIXI };
 export type Texture = PIXI.Texture<PIXI.Resource>;
 
-export type TextureAssetName = 'cell' | 'blade' | 'blade-glow';
+export type TextureAssetName =
+  | 'cell'
+  | 'cell-disabled'
+  | 'blade'
+  | 'blade-glow';
 
 export type TextureAsset = {
   name: TextureAssetName;
@@ -21,6 +25,10 @@ export const textureAssets: TextureAsset[] = [
   {
     name: 'cell',
     path: 'cell.png',
+  },
+  {
+    name: 'cell-disabled',
+    path: 'cell-disabled.png',
   },
   {
     name: 'blade',
