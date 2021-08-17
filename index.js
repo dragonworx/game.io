@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-const port = process.argv.length >= 3 ? parseInt(process.argv[2]) : 80;
+const port = process.env.GAME_PORT ? parseInt(process.env.GAME_PORT) : process.argv.length >= 3 ? parseInt(process.argv[2]) : 80;
 
 const indexHtml = fs.readFileSync(path.resolve(__dirname, './dist/client/index.html')).toString();
 

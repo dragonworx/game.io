@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run serve:dev",
+    "start": "npm run build:prod && npm run serve:prod",
     "dev": "npm-run-all -l -p dev:client dev:server",
     "dev:client:serve": "webpack serve --config webpack.client.js",
     "dev:client": "webpack --config webpack.client.js --watch",
@@ -17,7 +17,7 @@
     "build:prod:server": "webpack --mode=production --config webpack.server.js",
     "serve:dev": "nodemon ./dist/server/bundle.js --watch",
     "serve:prod:win": "set NODE_ENV=production && node index.js",
-    "serve:prod": "NODE_ENV=production node index.js",
+    "serve:prod": "NODE_ENV=production GAME_PORT=8080 node index.js",
     "count": "npx cloc ./src"
   },
   "keywords": [],
