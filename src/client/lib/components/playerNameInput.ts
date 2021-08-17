@@ -5,7 +5,7 @@ export class PlayerNameInput extends EventEmitter {
   constructor(audio: AudioPlayer) {
     super();
     const div = document.querySelector('#playerName')! as HTMLDivElement;
-    const input = div.querySelector('input[type="text"]')! as HTMLInputElement;
+    const input = div.querySelector('input')! as HTMLInputElement;
     const button = div.querySelector('.button')! as HTMLButtonElement;
 
     try {
