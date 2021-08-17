@@ -21,7 +21,7 @@
     "count": "npx cloc ./src"
   },
   "keywords": [],
-  "author": "Yannick Deubel",
+  "author": "Ali Chamas",
   "license": "MIT",
   "dependencies": {
     "@geckos.io/client": "^2.0.0",

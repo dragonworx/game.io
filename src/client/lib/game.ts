@@ -150,14 +150,14 @@ export class ClientGame {
     this.showCountdown();
     this.grid.init();
     this.players.forEach(player => player.gameInit());
+    if (this.userPlayer) {
+      this.bindInputEvents();
+    }
   }
 
   start() {
     console.log('Game start');
     this.updateGameStatus(GameStatus.Running);
-    if (this.userPlayer) {
-      this.bindInputEvents();
-    }
     this.players.forEach(player => player.gameStart());
     document.querySelector('#canvas')!.classList.add('no-cursor');
   }
