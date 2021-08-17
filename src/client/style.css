@@ -57,7 +57,7 @@ html * {
   display: none;
 }
 
-#playerName input[type='text'] {
+#playerName input {
   height: 18px;
   vertical-align: top;
   border-radius: 5px;
