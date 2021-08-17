@@ -30,8 +30,6 @@ type Socket = {
 
 export { Socket };
 
-export const TCPListenPort = 3000;
-
 export class ServerIO extends EventEmitter {
   udp: GeckosServer;
   socket: any;
@@ -47,9 +45,9 @@ export class ServerIO extends EventEmitter {
     socket.on('connection', this.onSocketConnect);
   }
 
-  listen() {
+  listen(port: number) {
     this.udp.listen();
-    this.socket.listen(TCPListenPort);
+    this.socket.listen(port);
   }
 
   onUDPConnect = (channel: ServerChannel) => {

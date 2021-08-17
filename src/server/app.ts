@@ -15,7 +15,7 @@ export class ServerApp {
   io: ServerIO;
   game: ServerGame;
 
-  constructor() {
+  constructor(port: number) {
     const io = (this.io = new ServerIO());
 
     this.game = new ServerGame(io);
@@ -38,7 +38,7 @@ export class ServerApp {
       this.onSocketRequestGameState,
     );
 
-    io.listen();
+    io.listen(port);
   }
 
   reset() {

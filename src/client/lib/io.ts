@@ -25,7 +25,10 @@ export class ClientIO extends EventEmitter {
     channel.on(Protocol.UDPMessage, this.onUDPMessage);
 
     const socket = (this.socket = io(
-      window.location.protocol + '//' + window.location.hostname + ':3000/',
+      window.location.protocol +
+        '//' +
+        window.location.hostname +
+        `:${parseInt(window.location.port || '80') + 1}/`,
     ));
 
     socket.on('connect', this.onSocketConnect);
