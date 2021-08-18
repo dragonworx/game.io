@@ -1,8 +1,8 @@
 import { EventEmitter } from 'eventemitter3';
-import { Action, BreakCellPoints, CollisionDamage, Direction } from '.';
-import { AdjacentCell, Cell, Grid } from './grid';
+import { Action, BreakCellPoints, CollisionDamage, Direction } from '../common';
+import { AdjacentCell, Cell, Grid } from '../common/grid';
 
-export class GridProxy extends EventEmitter {
+export class PlayerGridProxy extends EventEmitter {
   clientId: string;
   grid: Grid;
   cell: Cell;
