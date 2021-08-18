@@ -6,7 +6,6 @@ import {
   gameStatusToString,
   CodeToAction,
   InitialFPS,
-  PlayerJoinInfo,
   PlayerJoinedInfo,
 } from '../../common';
 import { Graphics, PIXI } from './graphics';
@@ -209,13 +208,13 @@ export class ClientGame {
 
   showGameOver(playerRank: PlayerPositionInfo[]) {
     const { graphics, audio, grid, gridView } = this;
-    gridView.container.filters = [new PIXI.filters.BlurFilter()];
     playerRank.forEach(info => {
       const player = this.getPlayer(info.cid);
       player.remoteUpdate(info, this.userPlayer);
     });
     audio.play('gameover');
     audio.sounds.get('music.mp3')!.stop();
+    gridView.gameOver();
     const isWinner = playerRank[0].cid === this.io.clientId;
     const alert = new Alert(graphics, isWinner ? 'Winner!' : 'Game Over!');
     alert.on('shown', () => alert.hide(graphics.center[0], grid.size));

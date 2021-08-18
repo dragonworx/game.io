@@ -1,8 +1,7 @@
 import { Howl } from 'howler';
 import {
   Direction,
-  GridDivisions,
-  GridSize,
+  GameStatus,
   PlayerInfo,
   PlayerPositionInfo,
 } from '../../common';
@@ -165,7 +164,7 @@ export class ClientPlayer {
 
   onLocalUpdate = (t: number) => {
     // this is mainly for graphics/animation updates, server has authoritive updates
-    if (this.isDead) {
+    if (this.isDead || this.game.status === GameStatus.Over) {
       return;
     }
     this.sprite.rotation += degToRad(5);
@@ -294,6 +293,7 @@ export class ClientPlayer {
     this.isDead = true;
     this.sprite.tint = 0xff0000;
     console.log('DEAD!', this.info.n);
+    this.gridView.boom();
     this.audio.play('dead');
     if (userPlayer && userPlayer.info.cid === this.info.cid) {
       const alert = new Alert(this.graphics, `You're toast!`);
@@ -305,5 +305,6 @@ export class ClientPlayer {
     this.label.visible = false;
     this.sprite.filters = [new PIXI.filters.BlurFilter()];
     this.particles.stop();
+    this.graphics.ease(this.container, { alpha: 0 }, 1000, 'easeOutBack');
   }
 }

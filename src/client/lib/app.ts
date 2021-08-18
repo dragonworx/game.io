@@ -19,7 +19,6 @@ import {
   PingIntervalMs,
   PlayerInfo,
   PlayerPositionInfo,
-  PlayerJoinInfo,
   PlayerJoinedInfo,
   InitialGameState,
 } from '../../common';

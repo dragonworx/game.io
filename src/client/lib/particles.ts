@@ -40,7 +40,7 @@ export const config = {
     end: 0,
   },
   scale: {
-    start: 0.2,
+    start: 0.3,
     end: 0.01,
     minimumScaleMultiplier: 1,
   },
@@ -68,10 +68,10 @@ export const config = {
     max: 0,
   },
   lifetime: {
-    min: 0.2,
-    max: 0.94,
+    min: 0.1,
+    max: 0.3,
   },
-  blendMode: 'normal',
+  blendMode: 'screen',
   frequency: 0.001,
   emitterLifetime: -1,
   maxParticles: 500,

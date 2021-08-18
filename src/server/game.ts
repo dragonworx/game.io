@@ -121,6 +121,7 @@ export class ServerGame {
 
     const allPlayersJoined = io.clients.size === players.length;
     if (allPlayersJoined) {
+      console.log('ALL PLAYERS JOINED');
       setTimeout(() => {
         this.init();
         setTimeout(() => this.start(), 4000);
@@ -245,6 +246,11 @@ export class ServerGame {
 
   update = () => {
     this.scheduleNextFrame();
+    if (this.status === GameStatus.Running && this.players.length === 0) {
+      // fixes bug when refreshing during development
+      this.reset();
+      return;
+    }
     if (this.status !== GameStatus.Running || this.paused) {
       return;
     }

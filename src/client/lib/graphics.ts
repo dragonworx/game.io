@@ -14,7 +14,9 @@ export type TextureAssetName =
   | 'cell'
   | 'cell-disabled'
   | 'blade'
-  | 'blade-glow';
+  | 'blade-glow'
+  | 'lava1'
+  | 'lava2';
 
 export type TextureAsset = {
   name: TextureAssetName;
@@ -37,6 +39,14 @@ export const textureAssets: TextureAsset[] = [
   {
     name: 'blade-glow',
     path: 'blade-glow.png',
+  },
+  {
+    name: 'lava1',
+    path: 'lava1.png',
+  },
+  {
+    name: 'lava2',
+    path: 'lava2.png',
   },
 ];
 
