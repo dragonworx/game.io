@@ -10,6 +10,7 @@ import {
   ClientUDPEvents,
   ServerUDPEvents,
 } from '../common/messaging';
+import { PlayerJoinInfo } from '../common';
 
 export class ServerApp {
   io: ServerIO;
@@ -105,9 +106,9 @@ export class ServerApp {
     client.messageSocket(ServerSocketEvents.SocketPong);
   };
 
-  onSocketPlayerJoin = (client: Client, playerName: string) => {
+  onSocketPlayerJoin = (client: Client, playerJoinInfo: PlayerJoinInfo) => {
     logger.color('white').bgColor('cyan').log(`onPlayerJoin: ${client.id}`);
-    this.game.newPlayer(client, playerName);
+    this.game.newPlayer(client, playerJoinInfo);
   };
 
   onSocketPlayerInput = (client: Client, action: number) => {
@@ -117,7 +118,7 @@ export class ServerApp {
   onSocketRequestGameState = (client: Client) => {
     client.messageSocket(
       ServerSocketEvents.SocketRespondGameState,
-      this.game.getGameState(),
+      this.game.getInitialGameState(),
     );
   };
 }

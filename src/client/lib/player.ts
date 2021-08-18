@@ -1,13 +1,22 @@
-import { Direction, PlayerInfo, PlayerUpdateInfo } from '../../common';
+import { Howl } from 'howler';
+import {
+  Direction,
+  GridDivisions,
+  GridSize,
+  PlayerInfo,
+  PlayerPositionInfo,
+} from '../../common';
 import { Cell, Grid } from '../../common/grid';
 import { AudioPlayer } from './audio';
 import { Alert } from './components/alert';
+import { ClientGame } from './game';
 import { degToRad, Graphics, PIXI } from './graphics';
 import { GridView } from './gridView';
 import { ClientIO } from './io';
 import { Particles } from './particles';
 
 export class ClientPlayer {
+  game: ClientGame;
   grid: Grid;
   io: ClientIO;
   info: PlayerInfo;
@@ -25,17 +34,21 @@ export class ClientPlayer {
   playerStatusEl: HTMLDivElement;
   isDead: boolean = false;
   isTakingDamage: boolean = false;
-  paricles: Particles;
+  particles: Particles;
   tint: number;
+  damageSound?: Howl;
 
   constructor(
+    game: ClientGame,
     grid: Grid,
     io: ClientIO,
     info: PlayerInfo,
     graphics: Graphics,
     audio: AudioPlayer,
     gridView: GridView,
+    tint: number,
   ) {
+    this.game = game;
     this.grid = grid;
     this.io = io;
     this.info = info;
@@ -52,12 +65,9 @@ export class ClientPlayer {
       stroke: '#000000',
     }));
 
-    const r = Math.random();
-    const g = Math.random();
-    const b = Math.random();
-    const tint = (this.tint = PIXI.utils.rgb2hex([r, g, b]));
+    this.tint = tint;
 
-    this.paricles = new Particles(graphics, container);
+    this.particles = new Particles(graphics, container);
 
     const glowTxture = graphics.textures.get('blade-glow');
     const glowSprite = (this.glowSprite = new PIXI.Sprite(glowTxture));
@@ -83,7 +93,11 @@ export class ClientPlayer {
     return [container.x, container.y];
   }
 
-  setInitialPosition(info: PlayerUpdateInfo) {
+  get isUserPlayer() {
+    return this.info.cid === this.game.io.clientId;
+  }
+
+  setInitialPosition(info: PlayerPositionInfo) {
     const { hasAddedToStage, graphics, container, grid } = this;
     const { h, v, d } = info;
     const cell = grid.getCell(h, v)!;
@@ -117,18 +131,19 @@ export class ClientPlayer {
   }
 
   setLabelPosition() {
-    const { label, direction } = this;
+    const { label, direction, grid } = this;
+    const cellSize = grid.cellSize;
     if (direction === Direction.Down) {
       label.x = 0;
-      label.y = 25;
+      label.y = cellSize * 2;
     } else if (direction === Direction.Right) {
-      label.x = 50;
+      label.x = cellSize * 2;
       label.y = 0;
     } else if (direction === Direction.Up) {
       label.x = 0;
-      label.y = -30;
+      label.y = cellSize * -2;
     } else if (direction === Direction.Left) {
-      label.x = -50;
+      label.x = cellSize * -2;
       label.y = 0;
     }
   }
@@ -136,12 +151,12 @@ export class ClientPlayer {
   gameInit() {
     this.isTakingDamage = false;
     this.sprite.tint = this.tint;
-    this.label.visible = true;
+    // this.label.visible = true;
   }
 
   gameStart() {
-    this.label.visible = false;
-    this.paricles.start();
+    // this.label.visible = false;
+    this.particles.start();
   }
 
   dispose() {
@@ -156,10 +171,10 @@ export class ClientPlayer {
     this.sprite.rotation += degToRad(5);
     this.glowSprite.rotation = this.sprite.rotation;
     this.glowSprite.alpha = Math.cos(Date.now() / 200) * 0.3 + 0.7;
-    this.paricles.update(t);
+    this.particles.update(t);
   };
 
-  remoteUpdate(info: PlayerUpdateInfo, userPlayer?: ClientPlayer) {
+  remoteUpdate(info: PlayerPositionInfo, userPlayer?: ClientPlayer) {
     // this is the update from the server game state
     const { container, grid, isDead } = this;
     if (isDead) {
@@ -208,46 +223,61 @@ export class ClientPlayer {
 
   takeDamage() {
     const { graphics, sprite, glowSprite, isTakingDamage, isDead } = this;
-    if (isTakingDamage || isDead) {
+    if (isDead) {
       return;
     }
-    this.audio.play('damage');
-    graphics
-      .ease(
-        sprite,
-        {
-          tint: 0xff0000,
-        },
-        250,
-        'easeOutBack',
-        0,
-        3,
-      )
-      .on('complete', () => {
-        if (this.isDead) {
-          return;
-        }
-        sprite.tint = this.tint;
-        this.isTakingDamage = false;
-      });
-    graphics
-      .ease(
-        glowSprite,
-        {
-          tint: 0xff0000,
-        },
-        250,
-        'easeOutBack',
-        0,
-        3,
-      )
-      .on('complete', () => {
-        if (this.isDead) {
-          return;
-        }
-        glowSprite.tint = this.tint;
-      });
-    this.isTakingDamage = true;
+    if (!this.damageSound) {
+      if (this.isUserPlayer) {
+        this.damageSound = this.audio.play(
+          `ouch${Math.ceil(Math.random() * 10) - 1}`,
+        );
+        this.damageSound &&
+          this.damageSound!.on('end', () => delete this.damageSound);
+        this.audio.play('damage');
+      } else {
+        this.damageSound = this.audio.play('damage');
+        this.damageSound &&
+          this.damageSound!.on('end', () => delete this.damageSound);
+      }
+    }
+    if (!isTakingDamage) {
+      graphics
+        .ease(
+          sprite,
+          {
+            tint: 0xff0000,
+          },
+          250,
+          'easeOutBack',
+          0,
+          3,
+        )
+        .on('complete', () => {
+          if (this.isDead) {
+            return;
+          }
+          sprite.tint = this.tint;
+          this.isTakingDamage = false;
+        });
+      graphics
+        .ease(
+          glowSprite,
+          {
+            tint: 0xff0000,
+          },
+          250,
+          'easeOutBack',
+          0,
+          3,
+        )
+        .on('complete', () => {
+          if (this.isDead) {
+            return;
+          }
+          glowSprite.tint = this.tint;
+        });
+      this.isTakingDamage = true;
+    }
   }
 
   updatePlayerStatus(score: number, health: number) {
@@ -274,6 +304,6 @@ export class ClientPlayer {
     }
     this.label.visible = false;
     this.sprite.filters = [new PIXI.filters.BlurFilter()];
-    this.paricles.stop();
+    this.particles.stop();
   }
 }

@@ -1,5 +1,5 @@
 import { ClientIO, Ping, startPing, endPing } from './io';
-import { Graphics } from './graphics';
+import { Graphics, PIXI } from './graphics';
 import {
   Protocol,
   Message,
@@ -18,7 +18,10 @@ import {
   GameState,
   PingIntervalMs,
   PlayerInfo,
-  PlayerUpdateInfo,
+  PlayerPositionInfo,
+  PlayerJoinInfo,
+  PlayerJoinedInfo,
+  InitialGameState,
 } from '../../common';
 import { AudioPlayer } from './audio';
 
@@ -205,12 +208,16 @@ export class ClientApp {
     this.game.updateGameStatus(status);
   };
 
-  onPlayerNameSubmit = (playerName: string) => {
+  onPlayerNameSubmit = (name: string) => {
     this.game.hidePlayerNameInput();
-    this.io.messageSocket(ClientSocketEvents.SocketPlayerJoin, playerName);
+    const r = Math.random();
+    const g = Math.random();
+    const b = Math.random();
+    const tint = PIXI.utils.rgb2hex([r, g, b]);
+    this.io.messageSocket(ClientSocketEvents.SocketPlayerJoin, { name, tint });
   };
 
-  onSocketPlayerJoined = (info: PlayerInfo) => {
+  onSocketPlayerJoined = (info: PlayerJoinedInfo) => {
     this.game.joinPlayer(info);
   };
 
@@ -218,7 +225,7 @@ export class ClientApp {
     this.game.removePlayer(clientId);
   };
 
-  onSocketPlayerInitialPositions = (info: PlayerUpdateInfo[]) => {
+  onSocketPlayerInitialPositions = (info: PlayerPositionInfo[]) => {
     this.game.updatePlayerInitialPositions(info);
   };
 
@@ -234,11 +241,14 @@ export class ClientApp {
     this.game.stop();
   };
 
-  onSocketRespondGameState = (gameState: GameState) => {
+  onSocketRespondGameState = (gameState: InitialGameState) => {
     this.game.updateGameStatus(gameState.s);
-    gameState.p.forEach(info => {
-      const player = this.game.newPlayer(info);
-      player.setInitialPosition(info);
+    gameState.p.forEach(playerJoinedInfo => {
+      const { cid, n, h, v, d, ld, s, hl, tint } = playerJoinedInfo;
+      const info: PlayerInfo = { cid, n };
+      const positionInfo: PlayerPositionInfo = { ...info, h, v, d, ld, s, hl };
+      const player = this.game.newPlayer(info, tint);
+      player.setInitialPosition(positionInfo);
     });
     this.hasInit = true;
   };
@@ -253,7 +263,7 @@ export class ClientApp {
     window.location.reload();
   };
 
-  onSocketGameOver = (playerRank: PlayerUpdateInfo[]) => {
+  onSocketGameOver = (playerRank: PlayerPositionInfo[]) => {
     this.game.showGameOver(playerRank);
   };
 }

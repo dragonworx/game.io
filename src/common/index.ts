@@ -11,6 +11,7 @@ export const CollisionDamage = 3;
 export const BreakCellPoints = 1;
 export const DialogFontSizeTitle = 26;
 export const DialogFontSizeBody = 14;
+export const EndGameTimeout = 3000;
 export const DialogFontSettings = {
   fontFamily: 'Orbitron',
   fill: '#ffffff',
@@ -73,14 +74,29 @@ export const isHorizontal = (direction: Direction) =>
 export interface GameState {
   s: GameStatus;
   f: number;
-  p: PlayerUpdateInfo[];
+  p: PlayerPositionInfo[];
 }
 
-export interface PlayerUpdateInfo extends PlayerInfo {
+export interface InitialGameState {
+  s: GameStatus;
+  f: number;
+  p: PlayerJoinedInfo[];
+}
+
+export interface PlayerPositionInfo extends PlayerInfo {
   h: number;
   v: number;
   d: Direction;
   ld: Direction;
   s: number;
   hl: number;
+}
+
+export interface PlayerJoinInfo {
+  name: string;
+  tint: number;
+}
+
+export interface PlayerJoinedInfo extends PlayerPositionInfo {
+  tint: number;
 }

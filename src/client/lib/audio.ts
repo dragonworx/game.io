@@ -44,6 +44,16 @@ export class AudioPlayer {
       'gameover.mp3',
       'go.mp3',
       'damage.mp3',
+      'ouch0.mp3',
+      'ouch1.mp3',
+      'ouch2.mp3',
+      'ouch3.mp3',
+      'ouch4.mp3',
+      'ouch5.mp3',
+      'ouch6.mp3',
+      'ouch7.mp3',
+      'ouch8.mp3',
+      'ouch9.mp3',
       'highscore.mp3',
     ].forEach(path => this.preloadSound(path));
   }
@@ -61,11 +71,13 @@ export class AudioPlayer {
       return;
     }
     console.log('Play audio: ' + path);
-    this.sounds.get(path + '.mp3')!.play();
+    const sound = this.sounds.get(path + '.mp3')!;
+    sound.play();
     if (!this.hasShownButton) {
       this.button.classList.remove('hidden');
       this.hasShownButton = true;
     }
+    return sound;
   }
 
   mute() {

@@ -40,13 +40,13 @@ export const config = {
     end: 0,
   },
   scale: {
-    start: 0.1,
-    end: 0.001,
+    start: 0.2,
+    end: 0.01,
     minimumScaleMultiplier: 1,
   },
   color: {
-    start: '#ffffff',
-    end: '#ffffff',
+    start: '#e4f9ff',
+    end: '#3fcbff',
   },
   speed: {
     start: 200,
@@ -62,14 +62,14 @@ export const config = {
     min: 0,
     max: 360,
   },
-  noRotation: false,
+  noRotation: true,
   rotationSpeed: {
     min: 0,
     max: 0,
   },
   lifetime: {
     min: 0.2,
-    max: 0.8,
+    max: 0.94,
   },
   blendMode: 'normal',
   frequency: 0.001,

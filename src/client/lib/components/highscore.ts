@@ -6,7 +6,7 @@ import {
   DialogFontSizeTitle,
   GridSize,
   GridMargin,
-  PlayerUpdateInfo,
+  PlayerPositionInfo,
 } from '../../../common';
 import { Graphics } from '../graphics';
 
@@ -17,9 +17,9 @@ export class HighScore extends EventEmitter {
   text: PIXI.Text;
   graphics: Graphics;
   container: PIXI.Container;
-  playerRank: PlayerUpdateInfo[];
+  playerRank: PlayerPositionInfo[];
 
-  constructor(graphics: Graphics, playerRank: PlayerUpdateInfo[]) {
+  constructor(graphics: Graphics, playerRank: PlayerPositionInfo[]) {
     super();
     this.graphics = graphics;
     const container = (this.container = new PIXI.Container());

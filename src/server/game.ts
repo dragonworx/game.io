@@ -8,9 +8,13 @@ import {
   InitialFPS,
   MAXFPS,
   FPSScalar,
-  PlayerUpdateInfo,
+  PlayerPositionInfo,
   Direction,
   gameStatusToString,
+  EndGameTimeout,
+  PlayerJoinInfo,
+  PlayerJoinedInfo,
+  InitialGameState,
 } from '../common';
 import { Grid } from '../common/grid';
 import { ServerSocketEvents, ServerUDPEvents } from '../common/messaging';
@@ -25,7 +29,8 @@ export class ServerGame {
   grid: Grid;
   paused: boolean = false;
   fps: number = InitialFPS;
-  timeout?: NodeJS.Timeout;
+  frameTimeout?: NodeJS.Timeout;
+  endGameTimeout?: NodeJS.Timeout;
 
   constructor(io: ServerIO) {
     this.io = io;
@@ -34,7 +39,7 @@ export class ServerGame {
   }
 
   scheduleNextFrame() {
-    this.timeout = setTimeout(this.update, Math.round(1000 / this.fps));
+    this.frameTimeout = setTimeout(this.update, Math.round(1000 / this.fps));
   }
 
   increaseSpeed() {
@@ -61,31 +66,51 @@ export class ServerGame {
   }
 
   onPlayerDead() {
-    const { players, io } = this;
+    const { players } = this;
     const alivePlayers = players.filter(player => player.proxy.health > 0);
     if (alivePlayers.length === 0) {
-      const playerRank = players.map(player => player.updateInfo);
-      playerRank.sort((a: PlayerUpdateInfo, b: PlayerUpdateInfo) => {
-        if (a.s > b.s) {
-          return -1;
-        } else if (a.s < b.s) {
-          return 1;
-        }
-        return 0;
-      });
-      this.status = GameStatus.Over;
-      this.stop();
-      io.broadcastSocket(ServerSocketEvents.SocketGameOver, playerRank);
-      this.reset();
+      this.endGame();
+    } else if (alivePlayers.length === 1) {
+      this.endGameTimeout = setTimeout(() => this.endGame(), EndGameTimeout);
     }
   }
 
-  newPlayer(client: Client, playerName: string) {
+  endGame() {
+    const { players, io, endGameTimeout } = this;
+    endGameTimeout && clearTimeout(endGameTimeout);
+    const playerRank = players.map(player => player.positionInfo);
+    playerRank.sort((a: PlayerPositionInfo, b: PlayerPositionInfo) => {
+      if (a.s > b.s) {
+        return -1;
+      } else if (a.s < b.s) {
+        return 1;
+      }
+      return 0;
+    });
+    this.status = GameStatus.Over;
+    this.stop();
+    io.broadcastSocket(ServerSocketEvents.SocketGameOver, playerRank);
+    this.reset();
+  }
+
+  randHexColor() {
+    const r = Math.round(Math.random() * 255);
+    const g = Math.round(Math.random() * 255);
+    const b = Math.round(Math.random() * 255);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  newPlayer(client: Client, playerJoinInfo: PlayerJoinInfo) {
     const { io, players, grid } = this;
-    const player = new ServerPlayer(grid, client, playerName);
+    const { name, tint } = playerJoinInfo;
+    const player = new ServerPlayer(grid, client, name, tint);
     player.proxy.on('dead', () => this.onPlayerDead());
     this.players.push(player);
-    io.broadcastSocket(ServerSocketEvents.SocketPlayerJoined, player.info);
+
+    io.broadcastSocket(ServerSocketEvents.SocketPlayerJoined, {
+      ...player.info,
+      tint,
+    } as PlayerJoinedInfo);
 
     this.distributePlayers();
     const playerPositionInfo = this.getPlayerPositionInfo();
@@ -151,8 +176,19 @@ export class ServerGame {
     };
   }
 
-  getPlayerPositionInfo(): PlayerUpdateInfo[] {
-    return this.players.map(player => player.updateInfo);
+  getInitialGameState(): InitialGameState {
+    return {
+      s: this.status,
+      p: this.players.map(player => ({
+        ...player.positionInfo,
+        tint: player.tint,
+      })),
+      f: this.fps,
+    };
+  }
+
+  getPlayerPositionInfo(): PlayerPositionInfo[] {
+    return this.players.map(player => player.positionInfo);
   }
 
   removePlayer(clientId: string) {
@@ -194,7 +230,7 @@ export class ServerGame {
   stop() {
     console.log('STOP');
     const { io } = this;
-    this.timeout && clearTimeout(this.timeout);
+    this.frameTimeout && clearTimeout(this.frameTimeout);
     this.status = GameStatus.Over;
     io.broadcastSocket(ServerSocketEvents.SocketGameStop);
   }

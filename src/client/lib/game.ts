@@ -2,10 +2,12 @@ import {
   GameState,
   GameStatus,
   PlayerInfo,
-  PlayerUpdateInfo,
+  PlayerPositionInfo,
   gameStatusToString,
   CodeToAction,
   InitialFPS,
+  PlayerJoinInfo,
+  PlayerJoinedInfo,
 } from '../../common';
 import { Graphics, PIXI } from './graphics';
 import { ClientPlayer } from './player';
@@ -48,27 +50,31 @@ export class ClientGame {
     this.audio = audio;
   }
 
-  newPlayer(playerInfo: PlayerInfo) {
+  newPlayer(playerInfo: PlayerInfo, tint: number) {
     const { players, graphics, io, grid, gridView, audio } = this;
+
     const player = new ClientPlayer(
+      this,
       grid,
       io,
       playerInfo,
       graphics,
       audio,
       gridView,
+      tint,
     );
     players.push(player);
     return player;
   }
 
-  joinPlayer(info: PlayerInfo) {
+  joinPlayer(joinInfo: PlayerJoinedInfo) {
     const { graphics, io } = this;
-    const player = this.newPlayer(info);
-    if (info.cid === io.clientId) {
+    const { cid, n, tint } = joinInfo;
+    const player = this.newPlayer({ cid, n }, tint);
+    if (cid === io.clientId) {
       this.userPlayer = player;
     }
-    const alert = new Alert(graphics, `"${info.n}" joined!`);
+    const alert = new Alert(graphics, `"${n}" joined!`);
     alert.on('shown', () => {
       const [x, y] = player.position;
       alert.hide(x, y);
@@ -99,7 +105,7 @@ export class ClientGame {
     this.updateFPSInfo(InitialFPS);
   }
 
-  updatePlayerInitialPositions(info: PlayerUpdateInfo[]) {
+  updatePlayerInitialPositions(info: PlayerPositionInfo[]) {
     info.forEach(info => {
       const player = this.getPlayer(info.cid);
       player.setInitialPosition(info);
@@ -116,6 +122,7 @@ export class ClientGame {
           alert.text.text = `Get ready in 1...`;
           setTimeout(() => {
             this.audio.play('go');
+            graphics.ease(alert.text, { scale: 2.0 }, 500, 'easeOutBack');
             alert.text.text = `Go!`;
             const [x, y] = grid.innerBounds.center;
             alert.hide(x, y);
@@ -200,7 +207,7 @@ export class ClientGame {
     document.querySelector('#fps span')!.innerHTML = `${fps.toFixed(1)}`;
   }
 
-  showGameOver(playerRank: PlayerUpdateInfo[]) {
+  showGameOver(playerRank: PlayerPositionInfo[]) {
     const { graphics, audio, grid, gridView } = this;
     gridView.container.filters = [new PIXI.filters.BlurFilter()];
     playerRank.forEach(info => {
@@ -209,7 +216,8 @@ export class ClientGame {
     });
     audio.play('gameover');
     audio.sounds.get('music.mp3')!.stop();
-    const alert = new Alert(graphics, 'Game Over!');
+    const isWinner = playerRank[0].cid === this.io.clientId;
+    const alert = new Alert(graphics, isWinner ? 'Winner!' : 'Game Over!');
     alert.on('shown', () => alert.hide(graphics.center[0], grid.size));
     alert.show();
     alert.on('hidden', () => {
