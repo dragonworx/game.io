@@ -45,13 +45,6 @@ export class Grid extends EventEmitter {
     this.forEach((cell: Cell) => {
       cell.isEmpty = false;
     });
-    // const clientId = 'not-used';
-    // cells[0].forEach(cell => this.breakCell(clientId, cell));
-    // cells[divisions - 1].forEach(cell => this.breakCell(clientId, cell));
-    // for (let v = 1; v <= divisions; v++) {
-    //   this.breakCell(clientId, this.getCell(1, v)!);
-    //   this.breakCell(clientId, this.getCell(divisions, v)!);
-    // }
   }
 
   getCell(h: number, v: number): Cell | null {
