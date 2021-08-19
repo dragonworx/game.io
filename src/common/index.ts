@@ -1,7 +1,7 @@
 import { Cell } from './grid';
 
-export const GridSize = 750;
-export const GridDivisions = 51; // odd numbers work best for initial distribution of players
+export const GridSize = 850;
+export const GridDivisions = 71; // odd numbers work best for initial distribution of players
 export const GridMargin = 0;
 export const PingIntervalMs = 1000;
 export const InitialFPS = 5;

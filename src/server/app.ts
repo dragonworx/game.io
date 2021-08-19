@@ -99,10 +99,16 @@ export class ServerApp {
   };
 
   onUDPPing = (client: Client) => {
+    if (!client) {
+      return;
+    }
     client.messageUDP(ServerUDPEvents.UDPPong);
   };
 
   onSocketPing = (client: Client) => {
+    if (!client) {
+      return;
+    }
     client.messageSocket(ServerSocketEvents.SocketPong);
   };
 
